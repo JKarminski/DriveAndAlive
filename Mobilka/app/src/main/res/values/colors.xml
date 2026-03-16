@@ -1,10 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+
+    <color name="bg_dark">#0D0D0F</color>
+    <color name="bg_surface">#1A1A1F</color>
+    <color name="bg_card">#242430</color>
+    <color name="bg_card_elevated">#2E2E3E</color>
+
+    <color name="accent_orange">#FF6B00</color>
+    <color name="accent_orange_light">#FF8C2D</color>
+    <color name="accent_yellow">#FFB800</color>
+    <color name="accent_red">#FF2D55</color>
+
+    <color name="accent_blue">#00A8FF</color>
+    <color name="accent_green">#00D084</color>
+    <color name="accent_purple">#8B5CF6</color>
+
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B0B0C0</color>
+    <color name="text_hint">#606070</color>
+    <color name="text_disabled">#404050</color>
+
+    <color name="stat_engine">#FF6B00</color>
+    <color name="stat_grip">#00A8FF</color>
+    <color name="stat_fuel">#00D084</color>
+    <color name="stat_durability">#8B5CF6</color>
+
+    <color name="coin_color">#FFD700</color>
+
+    <color name="overlay_dark">#AA000000</color>
+    <color name="divider">#33FFFFFF</color>
+
+    <color name="colorPrimary">#FF6B00</color>
+    <color name="colorPrimaryVariant">#C45200</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+    <color name="colorSecondary">#FFB800</color>
+    <color name="colorOnSecondary">#000000</color>
+    <color name="colorSurface">#1A1A1F</color>
+    <color name="colorOnSurface">#FFFFFF</color>
+    <color name="colorBackground">#0D0D0F</color>
+    <color name="colorOnBackground">#FFFFFF</color>
+    <color name="colorError">#FF2D55</color>
 </resources>

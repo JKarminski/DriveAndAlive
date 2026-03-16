@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_car_selection"
+        android:icon="@drawable/ic_car"
+        android:title="@string/nav_cars" />
+    <item
+        android:id="@+id/nav_map_selection"
+        android:icon="@drawable/ic_map"
+        android:title="@string/nav_maps" />
+    <item
+        android:id="@+id/nav_upgrades"
+        android:icon="@drawable/ic_upgrade"
+        android:title="@string/nav_upgrades" />
+    <item
+        android:id="@+id/nav_skills"
+        android:icon="@drawable/ic_skills"
+        android:title="@string/nav_skills" />
+</menu>

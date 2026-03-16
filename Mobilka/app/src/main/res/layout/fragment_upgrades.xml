@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_dark"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="24dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/upgrades_title"
+                android:textColor="@color/text_primary"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-condensed" />
+
+            <TextView
+                android:id="@+id/tv_coins_balance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/coin_color"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_gravity="center_vertical"
+                android:text="💰 0" />
+        </LinearLayout>
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.DriveAndAlive.CardView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                        android:text="🔧 Silnik" android:textColor="@color/stat_engine" android:textSize="16sp" android:textStyle="bold"/>
+                    <TextView android:id="@+id/tv_engine_level" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:textColor="@color/text_secondary" android:textSize="14sp" android:text="Poz. 1/10"/>
+                </LinearLayout>
+
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/progress_engine"
+                    android:layout_width="match_parent"
+                    android:layout_height="12dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="12dp"
+                    app:trackCornerRadius="6dp"
+                    app:indicatorColor="@color/stat_engine"
+                    app:trackColor="@color/bg_dark"
+                    android:max="10"
+                    android:progress="1" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_upgrade_engine"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.DriveAndAlive.Button.Primary"
+                    app:backgroundTint="@color/stat_engine"
+                    android:text="Ulepsz" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.DriveAndAlive.CardView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="16dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                        android:text="🛞 Przyczepność" android:textColor="@color/stat_grip" android:textSize="16sp" android:textStyle="bold"/>
+                    <TextView android:id="@+id/tv_grip_level" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:textColor="@color/text_secondary" android:textSize="14sp" android:text="Poz. 1/10"/>
+                </LinearLayout>
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/progress_grip"
+                    android:layout_width="match_parent" android:layout_height="12dp"
+                    android:layout_marginTop="8dp" android:layout_marginBottom="12dp"
+                    app:trackCornerRadius="6dp" app:indicatorColor="@color/stat_grip"
+                    app:trackColor="@color/bg_dark" android:max="10" android:progress="1" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_upgrade_grip"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    style="@style/Widget.DriveAndAlive.Button.Primary"
+                    app:backgroundTint="@color/stat_grip" android:text="Ulepsz" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.DriveAndAlive.CardView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="16dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                        android:text="⛽ Zbiornik Paliwa" android:textColor="@color/stat_fuel" android:textSize="16sp" android:textStyle="bold"/>
+                    <TextView android:id="@+id/tv_fuel_level" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:textColor="@color/text_secondary" android:textSize="14sp" android:text="Poz. 1/10"/>
+                </LinearLayout>
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/progress_fuel"
+                    android:layout_width="match_parent" android:layout_height="12dp"
+                    android:layout_marginTop="8dp" android:layout_marginBottom="12dp"
+                    app:trackCornerRadius="6dp" app:indicatorColor="@color/stat_fuel"
+                    app:trackColor="@color/bg_dark" android:max="10" android:progress="1" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_upgrade_fuel"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    style="@style/Widget.DriveAndAlive.Button.Primary"
+                    app:backgroundTint="@color/stat_fuel" android:text="Ulepsz" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.DriveAndAlive.CardView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="16dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                        android:text="🛡 Wytrzymałość" android:textColor="@color/stat_durability" android:textSize="16sp" android:textStyle="bold"/>
+                    <TextView android:id="@+id/tv_durability_level" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:textColor="@color/text_secondary" android:textSize="14sp" android:text="Poz. 1/10"/>
+                </LinearLayout>
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/progress_durability"
+                    android:layout_width="match_parent" android:layout_height="12dp"
+                    android:layout_marginTop="8dp" android:layout_marginBottom="12dp"
+                    app:trackCornerRadius="6dp" app:indicatorColor="@color/stat_durability"
+                    app:trackColor="@color/bg_dark" android:max="10" android:progress="1" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_upgrade_durability"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    style="@style/Widget.DriveAndAlive.Button.Primary"
+                    app:backgroundTint="@color/stat_durability" android:text="Ulepsz" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+</ScrollView>

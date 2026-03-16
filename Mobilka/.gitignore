@@ -13,3 +13,13 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Ignore all README files
+**/*/README.md
+**/README.md
+README.md
+
+# Ignore all log files
+*.log
+logcat_output.txt
+logcat_utf8.txt

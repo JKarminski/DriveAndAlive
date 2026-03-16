@@ -1,3 +1,77 @@
 <resources>
-    <string name="app_name">DriveAndAlive</string>
+    <string name="app_name">Drive &amp; Alive</string>
+
+    <string name="nav_cars">Auta</string>
+    <string name="nav_maps">Mapy</string>
+    <string name="nav_upgrades">Upgrade</string>
+    <string name="nav_skills">Skilsy</string>
+
+    <string name="select_car_title">Wybierz Pojazd</string>
+    <string name="btn_select_this_car">Wybierz to Auto</string>
+    <string name="car_speed_label">Prędkość</string>
+    <string name="car_grip_label">Przyczepność</string>
+    <string name="car_fuel_label">Paliwo</string>
+    <string name="car_durability_label">Wytrzymałość</string>
+    <string name="car_locked">Zablokowane</string>
+    <string name="car_unlock_cost">Odblokuj za %d monet</string>
+
+    <string name="select_map_title">Wybierz Mapę</string>
+    <string name="btn_play">Jedź!</string>
+    <string name="map_record_label">Rekord: %d m</string>
+    <string name="map_difficulty_easy">Łatwa</string>
+    <string name="map_difficulty_medium">Średnia</string>
+    <string name="map_difficulty_hard">Trudna</string>
+    <string name="map_weather_active">🌧 Zmienna pogoda</string>
+    <string name="map_locked">Odblokuj za %d monet</string>
+
+    <string name="upgrades_title">Ulepszenia</string>
+    <string name="upgrade_engine">Silnik</string>
+    <string name="upgrade_grip">Przyczepność</string>
+    <string name="upgrade_fuel">Zbiornik paliwa</string>
+    <string name="upgrade_durability">Wytrzymałość</string>
+    <string name="upgrade_max">MAX</string>
+    <string name="upgrade_level">Poziom %d/%d</string>
+    <string name="upgrade_cost">%d monet</string>
+    <string name="btn_upgrade">Ulepsz</string>
+    <string name="not_enough_coins">Za mało monet!</string>
+
+    <string name="skills_title">Umiejętności</string>
+    <string name="skills_spin_cost">Losuj za %d monet</string>
+    <string name="btn_spin">LOSUJ!</string>
+    <string name="skill_nitro">🚀 Dopalacz</string>
+    <string name="skill_shield">🛡 Tarcza</string>
+    <string name="skill_extra_fuel">⛽ Dodatkowe Paliwo</string>
+    <string name="skill_auto_gearbox">⚙ Auto-skrzynia</string>
+    <string name="skill_magnet">🧲 Magnes na Monety</string>
+    <string name="skill_nitro_desc">Jednorazowy boost prędkości na starcie rundy</string>
+    <string name="skill_shield_desc">Ignoruje jedno uderzenie</string>
+    <string name="skill_extra_fuel_desc">+50%% pojemności zbiornika</string>
+    <string name="skill_auto_gearbox_desc">Automatyczna skrzynia biegów</string>
+    <string name="skill_magnet_desc">Automatycznie zbiera monety w pobliżu</string>
+    <string name="active_skills">Aktywne umiejętności</string>
+    <string name="no_active_skills">Brak umiejętności – losuj!</string>
+
+    <string name="gear_label">Bieg: %d</string>
+    <string name="fuel_label">Paliwo: %d%%</string>
+    <string name="coins_label">💰 %d</string>
+    <string name="distance_label">%d m</string>
+    <string name="btn_gas">GAZ</string>
+    <string name="btn_reverse">WSTECZ</string>
+    <string name="btn_gear_up">▲</string>
+    <string name="btn_gear_down">▼</string>
+    <string name="btn_nitro">🚀</string>
+
+    <string name="result_title_win">Dobra Jazda!</string>
+    <string name="result_title_loss_fuel">Zabrakło Paliwa!</string>
+    <string name="result_title_loss_crash">Rozbity!</string>
+    <string name="result_distance">Dystans: %d m</string>
+    <string name="result_coins">Zarobione: %d monet</string>
+    <string name="result_new_record">🏆 NOWY REKORD!</string>
+    <string name="result_max_speed">Max prędkość: %s km/h</string>
+    <string name="result_gear_changes">Zmiany biegu: %d</string>
+    <string name="btn_play_again">Graj Ponownie</string>
+    <string name="btn_back_to_menu">Menu Główne</string>
+
+    <string name="coins_balance">%d monet</string>
+    <string name="loading">Ładowanie…</string>
 </resources>

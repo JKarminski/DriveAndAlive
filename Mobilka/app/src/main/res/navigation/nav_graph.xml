@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/nav_car_selection">
+
+    <fragment
+        android:id="@+id/nav_car_selection"
+        android:name="com.example.driveandalive.ui.carselection.CarSelectionFragment"
+        android:label="Wybierz Auto" />
+
+    <fragment
+        android:id="@+id/nav_map_selection"
+        android:name="com.example.driveandalive.ui.mapselection.MapSelectionFragment"
+        android:label="Wybierz Mapę" />
+
+    <fragment
+        android:id="@+id/nav_upgrades"
+        android:name="com.example.driveandalive.ui.upgrades.UpgradesFragment"
+        android:label="Ulepszenia" />
+
+    <fragment
+        android:id="@+id/nav_skills"
+        android:name="com.example.driveandalive.ui.skills.SkillsFragment"
+        android:label="Umiejętności" />
+
+</navigation>
