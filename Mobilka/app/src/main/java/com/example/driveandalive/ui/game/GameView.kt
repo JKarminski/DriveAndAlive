@@ -38,7 +38,7 @@ class GameView @JvmOverloads constructor(
     private val terrainPath = Path()
     private var cameraX = 0f
 
-    private val carScreenX get() = width * 0.35f
+    private val carScreenX get() = width * 0.30f
     private val carScreenY get() = height * 0.55f
 
     override fun onDraw(canvas: Canvas) {
@@ -46,7 +46,8 @@ class GameView @JvmOverloads constructor(
         val eng = engine ?: run { drawPlaceholder(canvas); return }
 
         wheelRotation += eng.speed * 0.5f
-        cameraX = eng.position - carScreenX / 10f
+        // cameraX in world units (meters)
+        cameraX = eng.position
 
         drawSky(canvas)
         drawParallaxBackground(canvas)
@@ -68,36 +69,43 @@ class GameView @JvmOverloads constructor(
     }
 
     private fun drawParallaxBackground(canvas: Canvas) {
-
-        val parallaxOffset = -cameraX * 0.3f % (width * 2f)
+        val scaleX = width / 100f
+        val parallaxOffset = (-cameraX * scaleX * 0.3f) % (width * 2f)
         val mountainPaint = Paint().apply { color = Color.parseColor("#162B3C"); style = Paint.Style.FILL; isAntiAlias = true }
         val path = Path()
         val baseY = height * 0.55f
         path.reset()
-        path.moveTo(parallaxOffset, baseY)
-        for (i in 0..20) {
-            val x = parallaxOffset + i * width * 0.12f
+        
+        // Ensure starting well to the left even with negative modulo
+        var startX = parallaxOffset
+        if (startX > 0) startX -= width * 2f
+        
+        path.moveTo(startX, baseY)
+        for (i in 0..30) {
+            val x = startX + i * width * 0.12f
             val y = baseY - 80f - sin(i * 1.3f) * 60f - cos(i * 0.7f) * 40f
             path.lineTo(x, y)
         }
-        path.lineTo(parallaxOffset + 20 * width * 0.12f, baseY)
+        path.lineTo(startX + 30 * width * 0.12f, baseY)
         path.close()
         canvas.drawPath(path, mountainPaint)
     }
 
     private fun drawTerrain(canvas: Canvas, eng: GameEngine) {
-        val scaleX = 10f  
+        val scaleX = width / 100f   // 100 world units (meters) per screen width
         val baseY = height * 0.55f
 
         terrainPath.reset()
-        terrainPath.moveTo(-100f, height.toFloat())
 
-        val startIdx = ((cameraX / scaleX) - 5).toInt().coerceAtLeast(0)
-        val endIdx = (startIdx + (width / scaleX).toInt() + 20).coerceAtMost(eng.terrain.size - 1)
+        val startIdx = ((cameraX / 10f) - 5).toInt().coerceAtLeast(0)
+        val endIdx = (startIdx + (100 / 10) + 20).coerceAtMost(eng.terrain.size - 1)
 
+        // carScreenX is where the car appears on screen in pixels
+        // world-to-screen: screenX = (worldX - cameraX) * scaleX + carScreenX
         for (i in startIdx..endIdx) {
-            val screenX = i * scaleX - cameraX * scaleX + carScreenX - eng.position
-            val screenY = baseY - eng.terrain[i]
+            val worldX = i * 10f  // world position in meters
+            val screenX = (worldX - cameraX) * scaleX + carScreenX
+            val screenY = baseY - eng.terrain[i] * scaleX // Multiply by scaleX
             if (i == startIdx) terrainPath.moveTo(screenX, screenY)
             else terrainPath.lineTo(screenX, screenY)
         }
@@ -110,38 +118,50 @@ class GameView @JvmOverloads constructor(
     }
 
     private fun drawCoins(canvas: Canvas, eng: GameEngine) {
+        val scaleX = width / 100f
         val baseY = height * 0.55f
         for (coinX in eng.coinPositions) {
-            val screenX = coinX - eng.position + carScreenX
+            val screenX = (coinX - cameraX) * scaleX + carScreenX
             if (screenX < -30f || screenX > width + 30f) continue
-            val terrainY = eng.getTerrainY(coinX)
-            val screenY = baseY - terrainY - 30f
+            val terrainIdx = (coinX / 10f).toInt().coerceIn(0, eng.terrain.size - 1)
+            val terrainY = eng.terrain[terrainIdx]
+            val screenY = baseY - terrainY * scaleX - 30f
             canvas.drawCircle(screenX, screenY, 18f, coinPaint)
             canvas.drawText("$", screenX, screenY + 6f, coinTextPaint)
         }
     }
 
     private fun drawCar(canvas: Canvas, eng: GameEngine) {
+        val scaleX = width / 100f
         val baseY = height * 0.55f
-        val terrainY = eng.getTerrainY(eng.position)
+        val terrainIdx = (eng.position / 10f).toInt().coerceIn(0, eng.terrain.size - 1)
+        val terrainY = eng.terrain[terrainIdx]
         val angle = eng.getCurrentTerrainAngle()
         val carX = carScreenX
-        val carY = baseY - terrainY
+        val carY = baseY - terrainY * scaleX
+
+        // Physics tilt: car body tilts based on slope + slight nose lift when accelerating hard
+        val speedRatio = (eng.speed / eng.maxSpeedKmh).coerceIn(0f, 1f)
+        val accelLift = if (eng.gasPressed && eng.speed > 5f) speedRatio * 0.08f else 0f  // front lifts slightly
+        val totalAngle = angle - accelLift
 
         canvas.save()
         canvas.translate(carX, carY)
-        canvas.rotate(Math.toDegrees(angle.toDouble()).toFloat())
+        canvas.rotate(Math.toDegrees(totalAngle.toDouble()).toFloat())
 
+        // Car body
         canvas.drawRoundRect(RectF(-55f, -28f, 55f, 0f), 8f, 8f, carBodyPaint)
-
+        // Roof
         canvas.drawRoundRect(RectF(-30f, -52f, 30f, -28f), 6f, 6f, carRoofPaint)
 
         if (eng.isNitroActive) {
             canvas.drawOval(RectF(-75f, -15f, -55f, 5f), nitroPaint)
         }
 
-        drawWheel(canvas, -35f, 0f)
-        drawWheel(canvas, 35f, 0f)
+        // Rear wheel stays on ground, front wheel lifts with acceleration
+        val frontLift = if (eng.gasPressed && eng.speed > 10f) -speedRatio * 6f else 0f
+        drawWheel(canvas, -35f, 0f)           // rear wheel
+        drawWheel(canvas, 35f, frontLift)     // front wheel (lifts slightly)
 
         canvas.restore()
     }

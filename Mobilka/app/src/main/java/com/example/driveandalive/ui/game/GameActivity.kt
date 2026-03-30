@@ -86,13 +86,25 @@ class GameActivity : AppCompatActivity() {
 
     private fun setupControls() {
 
-        binding.btnGas.setOnTouchListener { _, event ->
-            gameEngine.gasPressed = event.action == MotionEvent.ACTION_DOWN
+        binding.btnGas.setOnTouchListener { v, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> gameEngine.gasPressed = true
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    gameEngine.gasPressed = false
+                    v.performClick()
+                }
+            }
             true
         }
 
-        binding.btnReverse.setOnTouchListener { _, event ->
-            gameEngine.reversePressed = event.action == MotionEvent.ACTION_DOWN
+        binding.btnReverse.setOnTouchListener { v, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> gameEngine.reversePressed = true
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    gameEngine.reversePressed = false
+                    v.performClick()
+                }
+            }
             true
         }
 

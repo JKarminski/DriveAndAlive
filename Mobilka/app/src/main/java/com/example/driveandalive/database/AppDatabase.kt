@@ -49,6 +49,14 @@ abstract class AppDatabase : RoomDatabase() {
                 instance
             }
         }
+
+        fun resetDatabase(context: Context) {
+            synchronized(this) {
+                INSTANCE?.close()
+                INSTANCE = null
+                context.applicationContext.deleteDatabase("drive_alive.db")
+            }
+        }
     }
 
     private class DatabaseCallback : RoomDatabase.Callback() {

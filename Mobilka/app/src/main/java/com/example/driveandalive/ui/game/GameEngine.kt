@@ -73,10 +73,10 @@ class GameEngine(private val stats: VehicleStats, private val weather: CurrentWe
         for (i in 0 until count) {
             val x = startX + i * 10f
             val y = (
-                sin(x * 0.003f) * 80f +
-                sin(x * 0.008f) * 40f +
-                sin(x * 0.015f) * 20f +
-                (random.nextFloat() - 0.5f) * 10f
+                sin(x * 0.005f) * 20f +
+                sin(x * 0.015f) * 10f +
+                sin(x * 0.04f) * 5f +
+                (random.nextFloat() - 0.5f) * 1f
             )
             terrain.add(y)
         }
@@ -119,16 +119,17 @@ class GameEngine(private val stats: VehicleStats, private val weather: CurrentWe
 
         when {
             gasPressed && speed >= 0 -> {
-                val accel = acceleration * gripModifier - slopeEffect * 30f
+                // Uphill reduces acceleration strongly, downhill helps
+                val accel = acceleration * gripModifier - slopeEffect * 60f
                 speed = (speed + accel * dt).coerceAtMost(effectiveMax)
             }
             reversePressed -> {
                 speed = (speed - acceleration * 0.6f * dt).coerceAtLeast(-effectiveMax * 0.4f)
             }
             else -> {
-
                 val drag = if (speed > 0) -12f else if (speed < 0) 12f else 0f
-                val gravity = -slopeEffect * 20f
+                // Stronger gravity on slopes - roll downhill when released
+                val gravity = -slopeEffect * 40f
                 speed += (drag + gravity) * dt
                 if (abs(speed) < 0.5f) speed = 0f
             }
@@ -149,9 +150,7 @@ class GameEngine(private val stats: VehicleStats, private val weather: CurrentWe
             coinPositions.removeAll(nearby.toSet())
         }
 
-        if (abs(angle) > Math.toRadians(50.0).toFloat()) {
-            receiveDamage()
-        }
+        // Auto nie traci już HP na byle górce, po prostu próbuje na nią wjechać
 
         if (position > nextTerrainX - 2000f) {
             generateMoreTerrain()
