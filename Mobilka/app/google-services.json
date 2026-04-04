@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "715413667571",
+    "firebase_url": "https://leaderboard-3e600-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "leaderboard-3e600",
+    "storage_bucket": "leaderboard-3e600.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:715413667571:android:626ab499edd660aeec8186",
+        "android_client_info": {
+          "package_name": "com.example.driveandalive"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBNO0oBrnqhJBK3mr2apkToDclHcSz6IiE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

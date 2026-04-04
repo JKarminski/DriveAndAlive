@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.kapt)
+
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -62,6 +64,9 @@ dependencies {
     implementation(libs.okhttp.logging)
 
     implementation(libs.viewpager2)
+
+    implementation(platform("com.google.firebase:firebase-bom:34.11.0"))
+    implementation("com.google.firebase:firebase-database")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
