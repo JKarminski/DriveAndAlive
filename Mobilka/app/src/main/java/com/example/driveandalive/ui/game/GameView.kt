@@ -5,6 +5,15 @@ import android.graphics.*
 import android.view.View
 import kotlin.math.*
 
+/**
+ * Widok gry – renderuje świat Box2D na Canvas.
+ *
+ * Konwencja kamer:
+ *  - Auto jest zawsze rysowane w punkcie (carScreenX, carScreenY)
+ *  - Cała reszta świata przesuwa się względem auta
+ *  - Box2D: Y rośnie w górę  →  Canvas: Y rośnie w dół
+ *    Konwersja:  screenY = carScreenY - (worldY - carWorldY) * PTM
+ */
 class GameView @JvmOverloads constructor(
     context: Context,
     attrs: android.util.AttributeSet? = null,
@@ -14,208 +23,386 @@ class GameView @JvmOverloads constructor(
     var engine: GameEngine? = null
         set(value) {
             field = value
-            invalidate() 
+            invalidate()
         }
+
+    // ─── Paints ────────────────────────────────────────────────────────────
+    private val skyGradPaint = Paint()
+
+    private val terrainFillPaint = Paint().apply {
+        style = Paint.Style.FILL
+        isAntiAlias = true
+    }
+    private val terrainEdgePaint = Paint().apply {
+        style = Paint.Style.STROKE
+        strokeWidth = 4f
+        isAntiAlias = true
+    }
+
+    private val carBodyPaint  = Paint().apply { style = Paint.Style.FILL; isAntiAlias = true }
+    private val carRoofPaint  = Paint().apply { style = Paint.Style.FILL; isAntiAlias = true }
+    private val carDetailPaint = Paint().apply { style = Paint.Style.FILL; isAntiAlias = true }
+    private val carWindowPaint = Paint().apply {
+        color = Color.parseColor("#80C8E8FF")
+        style = Paint.Style.FILL
+        isAntiAlias = true
+    }
+    private val wheelPaint = Paint().apply {
+        color = Color.parseColor("#1A1A1A")
+        style = Paint.Style.FILL
+        isAntiAlias = true
+    }
+    private val tireTreadPaint = Paint().apply {
+        color = Color.parseColor("#333333")
+        style = Paint.Style.STROKE
+        strokeWidth = 6f
+        isAntiAlias = true
+    }
+    private val rimPaint = Paint().apply {
+        color = Color.parseColor("#C0C0C0")
+        style = Paint.Style.FILL
+        isAntiAlias = true
+    }
+    private val spokePaint = Paint().apply {
+        color = Color.parseColor("#999999")
+        style = Paint.Style.STROKE
+        strokeWidth = 5f
+        isAntiAlias = true
+    }
+
+    private val coinPaint  = Paint().apply { color = Color.parseColor("#FFD700"); style = Paint.Style.FILL; isAntiAlias = true }
+    private val coinRingPaint = Paint().apply { color = Color.parseColor("#FFA500"); style = Paint.Style.STROKE; strokeWidth = 3f; isAntiAlias = true }
+    private val coinTextPaint = Paint().apply { color = Color.parseColor("#8B4513"); textSize = 18f; textAlign = Paint.Align.CENTER; isFakeBoldText = true }
+
+    private val nitroPaint = Paint().apply { style = Paint.Style.FILL; isAntiAlias = true }
+
+    // HUD
+    private val hudTextPaint  = Paint().apply { color = Color.WHITE; textSize = 36f; isFakeBoldText = true; setShadowLayer(5f, 2f, 2f, Color.BLACK) }
+    private val hudSmallPaint = Paint().apply { color = Color.parseColor("#CCCCCC"); textSize = 24f; setShadowLayer(3f, 1f, 1f, Color.BLACK) }
+    private val barBgPaint    = Paint().apply { color = Color.parseColor("#55000000"); style = Paint.Style.FILL }
+    private val barFuelPaint  = Paint().apply { style = Paint.Style.FILL }
+    private val barHpPaint    = Paint().apply { color = Color.parseColor("#FF2D55"); style = Paint.Style.FILL }
+    private val barBorderPaint = Paint().apply { color = Color.parseColor("#80FFFFFF"); style = Paint.Style.STROKE; strokeWidth = 2f }
+
+    // Parallax
+    private val mountainPaint = Paint().apply {
+        color = Color.parseColor("#0E2030")
+        style = Paint.Style.FILL
+        isAntiAlias = true
+    }
+
+    // Paths reused each frame
+    private val terrainPath  = Path()
+    private val mountainPath = Path()
+
+    // Wheel rotation
     private var wheelRotation = 0f
 
-    private val skyPaintTop = Paint().apply { color = Color.parseColor("#0D1B2A") }
-    private val skyPaintBot = Paint().apply { color = Color.parseColor("#1C3A5E") }
-    private val terrainPaint = Paint().apply { color = Color.parseColor("#4A7C59"); style = Paint.Style.FILL; isAntiAlias = true }
-    private val terrainLinePaint = Paint().apply { color = Color.parseColor("#2D4A35"); style = Paint.Style.STROKE; strokeWidth = 3f; isAntiAlias = true }
-    private val carBodyPaint = Paint().apply { color = Color.parseColor("#E85D04"); style = Paint.Style.FILL; isAntiAlias = true }
-    private val carRoofPaint = Paint().apply { color = Color.parseColor("#C44D04"); style = Paint.Style.FILL }
-    private val wheelPaint = Paint().apply { color = Color.parseColor("#222222"); style = Paint.Style.FILL; isAntiAlias = true }
-    private val wheelSpokePaint = Paint().apply { color = Color.parseColor("#888888"); style = Paint.Style.STROKE; strokeWidth = 3f; isAntiAlias = true }
-    private val coinPaint = Paint().apply { color = Color.parseColor("#FFD700"); style = Paint.Style.FILL; isAntiAlias = true }
-    private val coinTextPaint = Paint().apply { color = Color.BLACK; textSize = 14f; textAlign = Paint.Align.CENTER; isFakeBoldText = true }
-    private val hudTextPaint = Paint().apply { color = Color.WHITE; textSize = 32f; isFakeBoldText = true; setShadowLayer(4f, 2f, 2f, Color.BLACK) }
-    private val hudSmallPaint = Paint().apply { color = Color.parseColor("#AAAAAA"); textSize = 22f }
-    private val fuelBgPaint = Paint().apply { color = Color.parseColor("#33FFFFFF"); style = Paint.Style.FILL }
-    private val fuelFillPaint = Paint().apply { color = Color.parseColor("#00D084"); style = Paint.Style.FILL }
-    private val nitroPaint = Paint().apply { color = Color.parseColor("#FF6B00"); style = Paint.Style.FILL }
-    private val skyGradientPaint = Paint()
+    // ─── Pozycja auta na ekranie ─────────────────────────────────────────
+    private val carScreenX get() = width  * 0.30f
+    private val carScreenY get() = height * 0.52f
 
-    private val terrainPath = Path()
-    private var cameraX = 0f
+    // ─── PTM ─────────────────────────────────────────────────────────────
+    private val ptm get() = GameEngine.PTM
 
-    private val carScreenX get() = width * 0.30f
-    private val carScreenY get() = height * 0.55f
+    // ─── Konwersje świat → ekran ─────────────────────────────────────────
+    private fun worldToScreenX(worldX: Float, camWorldX: Float): Float =
+        carScreenX + (worldX - camWorldX) * ptm
 
+    private fun worldToScreenY(worldY: Float, camWorldY: Float): Float =
+        carScreenY - (worldY - camWorldY) * ptm
+
+    // ═══════════════════════════════════════════════════════════════════════
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         val eng = engine ?: run { drawPlaceholder(canvas); return }
 
-        wheelRotation += eng.speed * 0.5f
-        // cameraX in world units (meters)
-        cameraX = eng.position
+        val carPos  = eng.chassisBody.position
+        val camX    = carPos.x
+        val camY    = carPos.y
+
+        // Obrót kół z prędkości kątowej
+        val frontOmega = eng.frontWheelBody.angularVelocity
+        wheelRotation += Math.toDegrees(frontOmega.toDouble()).toFloat() * (GameEngine.TICK_MS / 1000f)
 
         drawSky(canvas)
-        drawParallaxBackground(canvas)
-        drawTerrain(canvas, eng)
-        drawCoins(canvas, eng)
-        drawCar(canvas, eng)
+        drawParallax(canvas, camX)
+        drawTerrain(canvas, eng, camX, camY)
+        drawCoins(canvas, eng, camX, camY)
+        drawCar(canvas, eng, camX, camY)
         drawHUD(canvas, eng)
 
-        invalidate()   
+        invalidate()
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    //  Sky
+    // ═══════════════════════════════════════════════════════════════════════
     private fun drawSky(canvas: Canvas) {
-        val gradient = LinearGradient(0f, 0f, 0f, height * 0.6f,
-            Color.parseColor("#0D1B2A"), Color.parseColor("#1C3A5E"), Shader.TileMode.CLAMP)
-        skyGradientPaint.shader = gradient
-        canvas.drawRect(0f, 0f, width.toFloat(), height * 0.6f, skyGradientPaint)
-
-        canvas.drawRect(0f, height * 0.6f, width.toFloat(), height.toFloat(), terrainPaint)
+        val gradient = LinearGradient(
+            0f, 0f, 0f, height * 0.7f,
+            intArrayOf(
+                Color.parseColor("#0A1628"),
+                Color.parseColor("#1A3A6E"),
+                Color.parseColor("#2E5FA3")
+            ),
+            floatArrayOf(0f, 0.5f, 1f),
+            Shader.TileMode.CLAMP
+        )
+        skyGradPaint.shader = gradient
+        canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), skyGradPaint)
     }
 
-    private fun drawParallaxBackground(canvas: Canvas) {
-        val scaleX = width / 100f
-        val parallaxOffset = (-cameraX * scaleX * 0.3f) % (width * 2f)
-        val mountainPaint = Paint().apply { color = Color.parseColor("#162B3C"); style = Paint.Style.FILL; isAntiAlias = true }
-        val path = Path()
-        val baseY = height * 0.55f
-        path.reset()
-        
-        // Ensure starting well to the left even with negative modulo
+    // ═══════════════════════════════════════════════════════════════════════
+    //  Parallax Mountains
+    // ═══════════════════════════════════════════════════════════════════════
+    private fun drawParallax(canvas: Canvas, camX: Float) {
+        val parallaxOffset = (-camX * ptm * 0.25f) % (width * 2f)
+
+        mountainPath.reset()
         var startX = parallaxOffset
         if (startX > 0) startX -= width * 2f
-        
-        path.moveTo(startX, baseY)
-        for (i in 0..30) {
-            val x = startX + i * width * 0.12f
-            val y = baseY - 80f - sin(i * 1.3f) * 60f - cos(i * 0.7f) * 40f
-            path.lineTo(x, y)
+
+        mountainPath.moveTo(startX, height * 0.72f)
+        for (i in 0..40) {
+            val x = startX + i * width * 0.07f
+            val y = height * 0.72f - 120f - sin(i * 1.7f) * 90f - cos(i * 0.9f) * 50f
+            mountainPath.lineTo(x, y)
         }
-        path.lineTo(startX + 30 * width * 0.12f, baseY)
-        path.close()
-        canvas.drawPath(path, mountainPaint)
+        mountainPath.lineTo(startX + 40 * width * 0.07f, height * 0.72f)
+        mountainPath.close()
+
+        canvas.drawPath(mountainPath, mountainPaint)
     }
 
-    private fun drawTerrain(canvas: Canvas, eng: GameEngine) {
-        val scaleX = width / 100f   // 100 world units (meters) per screen width
-        val baseY = height * 0.55f
+    // ═══════════════════════════════════════════════════════════════════════
+    //  Teren
+    // ═══════════════════════════════════════════════════════════════════════
+    private fun drawTerrain(canvas: Canvas, eng: GameEngine, camX: Float, camY: Float) {
+        // Kolory terenu zależne od mapy
+        val (fillColor, edgeColor) = when (eng.mapType) {
+            MapType.PRAIRIE   -> Pair("#3D6B4A", "#2A4A33")
+            MapType.MOUNTAINS -> Pair("#7A7060", "#5A5040")
+            MapType.ARCTIC    -> Pair("#C8DDF0", "#A0C0DC")
+            MapType.JUNGLE    -> Pair("#2D5A3D", "#1E3D2A")
+            MapType.SINUSOIDA -> Pair("#2E4A8A", "#1A3060")
+        }
+        terrainFillPaint.color = Color.parseColor(fillColor)
+        terrainEdgePaint.color = Color.parseColor(edgeColor)
+
+        val step = GameEngine.TERRAIN_STEP_M
+        val startIdx = ((camX / step) - 3).toInt().coerceAtLeast(0)
+        val endIdx   = (startIdx + (width / ptm / step + 8).toInt()).coerceAtMost(eng.terrainPoints.size - 1)
 
         terrainPath.reset()
-
-        val startIdx = ((cameraX / 10f) - 5).toInt().coerceAtLeast(0)
-        val endIdx = (startIdx + (100 / 10) + 20).coerceAtMost(eng.terrain.size - 1)
-
-        // carScreenX is where the car appears on screen in pixels
-        // world-to-screen: screenX = (worldX - cameraX) * scaleX + carScreenX
+        var first = true
         for (i in startIdx..endIdx) {
-            val worldX = i * 10f  // world position in meters
-            val screenX = (worldX - cameraX) * scaleX + carScreenX
-            val screenY = baseY - eng.terrain[i] * scaleX // Multiply by scaleX
-            if (i == startIdx) terrainPath.moveTo(screenX, screenY)
-            else terrainPath.lineTo(screenX, screenY)
+            val wx = i * step
+            val wy = eng.terrainPoints[i]
+            val sx = worldToScreenX(wx, camX)
+            val sy = worldToScreenY(wy, camY)
+            if (first) { terrainPath.moveTo(sx, sy); first = false }
+            else        terrainPath.lineTo(sx, sy)
         }
-        terrainPath.lineTo(width.toFloat() + 100f, height.toFloat())
-        terrainPath.lineTo(-100f, height.toFloat())
+        // Zamknij ścieżkę na dole ekranu
+        terrainPath.lineTo(width + 200f, height + 200f)
+        terrainPath.lineTo(-200f, height + 200f)
         terrainPath.close()
 
-        canvas.drawPath(terrainPath, terrainPaint)
-        canvas.drawPath(terrainPath, terrainLinePaint)
+        canvas.drawPath(terrainPath, terrainFillPaint)
+        canvas.drawPath(terrainPath, terrainEdgePaint)
     }
 
-    private fun drawCoins(canvas: Canvas, eng: GameEngine) {
-        val scaleX = width / 100f
-        val baseY = height * 0.55f
+    // ═══════════════════════════════════════════════════════════════════════
+    //  Monety
+    // ═══════════════════════════════════════════════════════════════════════
+    private fun drawCoins(canvas: Canvas, eng: GameEngine, camX: Float, camY: Float) {
         for (coinX in eng.coinPositions) {
-            val screenX = (coinX - cameraX) * scaleX + carScreenX
-            if (screenX < -30f || screenX > width + 30f) continue
-            val terrainIdx = (coinX / 10f).toInt().coerceIn(0, eng.terrain.size - 1)
-            val terrainY = eng.terrain[terrainIdx]
-            val screenY = baseY - terrainY * scaleX - 30f
-            canvas.drawCircle(screenX, screenY, 18f, coinPaint)
-            canvas.drawText("$", screenX, screenY + 6f, coinTextPaint)
+            val sx = worldToScreenX(coinX, camX)
+            if (sx < -40f || sx > width + 40f) continue
+            val terrainY = eng.getTerrainY(coinX)
+            val sy = worldToScreenY(terrainY + 1.2f, camY)
+            canvas.drawCircle(sx, sy, 22f, coinPaint)
+            canvas.drawCircle(sx, sy, 22f, coinRingPaint)
+            canvas.drawText("$", sx, sy + 7f, coinTextPaint)
         }
     }
 
-    private fun drawCar(canvas: Canvas, eng: GameEngine) {
-        val scaleX = width / 100f
-        val baseY = height * 0.55f
-        val terrainIdx = (eng.position / 10f).toInt().coerceIn(0, eng.terrain.size - 1)
-        val terrainY = eng.terrain[terrainIdx]
-        val angle = eng.getCurrentTerrainAngle()
-        val carX = carScreenX
-        val carY = baseY - terrainY * scaleX
+    // ═══════════════════════════════════════════════════════════════════════
+    //  Auto
+    // ═══════════════════════════════════════════════════════════════════════
+    private fun drawCar(canvas: Canvas, eng: GameEngine, camX: Float, camY: Float) {
+        // Koła
+        drawWheel(canvas, eng.rearWheelBody.position.x,
+            eng.rearWheelBody.position.y, camX, camY,
+            eng.rearWheelBody.angle.toFloat())
+        drawWheel(canvas, eng.frontWheelBody.position.x,
+            eng.frontWheelBody.position.y, camX, camY,
+            eng.frontWheelBody.angle.toFloat())
 
-        // Physics tilt: car body tilts based on slope + slight nose lift when accelerating hard
-        val speedRatio = (eng.speed / eng.maxSpeedKmh).coerceIn(0f, 1f)
-        val accelLift = if (eng.gasPressed && eng.speed > 5f) speedRatio * 0.08f else 0f  // front lifts slightly
-        val totalAngle = angle - accelLift
+        // Nadwozie
+        val cx = worldToScreenX(eng.chassisBody.position.x, camX)
+        val cy = worldToScreenY(eng.chassisBody.position.y, camY)
+        val carAngle = -eng.chassisBody.angle   // Box2D→Canvas (odwrócone Y)
 
         canvas.save()
-        canvas.translate(carX, carY)
-        canvas.rotate(Math.toDegrees(totalAngle.toDouble()).toFloat())
+        canvas.translate(cx, cy)
+        canvas.rotate(Math.toDegrees(carAngle.toDouble()).toFloat())
 
-        // Car body
-        canvas.drawRoundRect(RectF(-55f, -28f, 55f, 0f), 8f, 8f, carBodyPaint)
-        // Roof
-        canvas.drawRoundRect(RectF(-30f, -52f, 30f, -28f), 6f, 6f, carRoofPaint)
+        // Wybierz kolor nadwozia wg pojazdu  (potem można dodać per-vehicle)
+        carBodyPaint.color = Color.parseColor("#E85D04")
+        carRoofPaint.color = Color.parseColor("#C04400")
 
+        // ── Nadwozie (w Box2D 1.1 m × 0.35 m → w pikselach × PTM) ────────
+        val hw = 1.1f * ptm    // połowa szerokości
+        val hh = 0.35f * ptm   // połowa wysokości
+
+        // Podwozie
+        canvas.drawRoundRect(RectF(-hw, -hh, hw, hh), 12f, 12f, carBodyPaint)
+
+        // Zderzaki
+        carDetailPaint.color = Color.parseColor("#333333")
+        canvas.drawRoundRect(RectF(hw - 8f, -hh + 8f, hw + 6f, hh - 8f), 4f, 4f, carDetailPaint)
+        canvas.drawRoundRect(RectF(-hw - 6f, -hh + 8f, -hw + 8f, hh - 8f), 4f, 4f, carDetailPaint)
+
+        // Dach (kabina)
+        val roofL = -hw * 0.45f
+        val roofR =  hw * 0.55f
+        val roofTop = -hh - ptm * 0.55f
+        val roofBot = -hh
+
+        canvas.drawRoundRect(RectF(roofL, roofTop, roofR, roofBot), 10f, 10f, carRoofPaint)
+
+        // Szyba przednia
+        canvas.drawRoundRect(RectF(roofL + 10f, roofTop + 8f, roofR - 6f, roofBot - 4f), 6f, 6f, carWindowPaint)
+
+        // Nitro flame
         if (eng.isNitroActive) {
-            canvas.drawOval(RectF(-75f, -15f, -55f, 5f), nitroPaint)
+            val nPts = 6
+            for (i in 0 until nPts) {
+                val frac = i.toFloat() / nPts
+                nitroPaint.color = lerpColor("#FF6B00", "#FFDD00", frac)
+                nitroPaint.alpha = (255 * (1f - frac)).toInt()
+                canvas.drawOval(
+                    RectF(-hw - 16f - i * 12f, -8f + i * 2f, -hw - 4f - i * 12f, 8f - i * 2f),
+                    nitroPaint
+                )
+            }
         }
-
-        // Rear wheel stays on ground, front wheel lifts with acceleration
-        val frontLift = if (eng.gasPressed && eng.speed > 10f) -speedRatio * 6f else 0f
-        drawWheel(canvas, -35f, 0f)           // rear wheel
-        drawWheel(canvas, 35f, frontLift)     // front wheel (lifts slightly)
 
         canvas.restore()
     }
 
-    private fun drawWheel(canvas: Canvas, offsetX: Float, offsetY: Float) {
-        canvas.save()
-        canvas.translate(offsetX, offsetY)
-        canvas.rotate(wheelRotation)
-        canvas.drawCircle(0f, 0f, 18f, wheelPaint)
+    private fun drawWheel(
+        canvas: Canvas,
+        worldX: Float, worldY: Float,
+        camX: Float, camY: Float,
+        angle: Float
+    ) {
+        val sx = worldToScreenX(worldX, camX)
+        val sy = worldToScreenY(worldY, camY)
+        val r = 0.42f * ptm  // promień koła w pikselach
 
-        for (i in 0..3) {
-            val a = Math.toRadians(i * 45.0)
+        canvas.save()
+        canvas.translate(sx, sy)
+        canvas.rotate(-Math.toDegrees(angle.toDouble()).toFloat())
+
+        // Opona
+        canvas.drawCircle(0f, 0f, r, wheelPaint)
+
+        // Bieżnik – łuki
+        for (i in 0..7) {
+            val a = (i * 45f)
+            canvas.drawArc(RectF(-r, -r, r, r), a, 20f, false, tireTreadPaint)
+        }
+
+        // Felga
+        canvas.drawCircle(0f, 0f, r * 0.58f, rimPaint)
+
+        // Szprychy
+        for (i in 0..4) {
+            val a = Math.toRadians(i * 72.0)
             canvas.drawLine(
-                (-12f * cos(a)).toFloat(), (-12f * sin(a)).toFloat(),
-                (12f * cos(a)).toFloat(), (12f * sin(a)).toFloat(),
-                wheelSpokePaint
+                (r * 0.18f * cos(a)).toFloat(), (r * 0.18f * sin(a)).toFloat(),
+                (r * 0.55f * cos(a)).toFloat(), (r * 0.55f * sin(a)).toFloat(),
+                spokePaint
             )
         }
+
+        // Piasta
+        canvas.drawCircle(0f, 0f, r * 0.15f, wheelPaint)
+
         canvas.restore()
     }
 
+    private fun lerpColor(from: String, to: String, t: Float): Int {
+        val c1 = Color.parseColor(from)
+        val c2 = Color.parseColor(to)
+        return Color.argb(
+            (Color.alpha(c1) + (Color.alpha(c2) - Color.alpha(c1)) * t).toInt(),
+            (Color.red(c1)   + (Color.red(c2)   - Color.red(c1))   * t).toInt(),
+            (Color.green(c1) + (Color.green(c2) - Color.green(c1)) * t).toInt(),
+            (Color.blue(c1)  + (Color.blue(c2)  - Color.blue(c1))  * t).toInt()
+        )
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  HUD
+    // ═══════════════════════════════════════════════════════════════════════
     private fun drawHUD(canvas: Canvas, eng: GameEngine) {
+        val pad = 20f
 
-        val fuelW = 200f; val fuelH = 20f; val fuelX = 20f; val fuelY = 24f
-        canvas.drawRoundRect(RectF(fuelX, fuelY, fuelX + fuelW, fuelY + fuelH), 10f, 10f, fuelBgPaint)
+        // ── Pasek paliwa ────────────────────────────────────────────────────
+        val barW = 220f; val barH = 22f; val barX = pad; val barY = pad + 8f
+        canvas.drawRoundRect(RectF(barX, barY, barX + barW, barY + barH), 11f, 11f, barBgPaint)
         val fuelRatio = (eng.fuel / eng.fuelCapacity).coerceIn(0f, 1f)
-        fuelFillPaint.color = when {
-            fuelRatio > 0.5f -> Color.parseColor("#00D084")
+        barFuelPaint.color = when {
+            fuelRatio > 0.5f  -> Color.parseColor("#00E676")
             fuelRatio > 0.25f -> Color.parseColor("#FFB800")
-            else -> Color.parseColor("#FF2D55")
+            else              -> Color.parseColor("#FF2D55")
         }
-        canvas.drawRoundRect(RectF(fuelX, fuelY, fuelX + fuelW * fuelRatio, fuelY + fuelH), 10f, 10f, fuelFillPaint)
-        canvas.drawText("⛽", fuelX - 5f, fuelY + fuelH + 5f, hudSmallPaint)
+        if (fuelRatio > 0f)
+            canvas.drawRoundRect(RectF(barX, barY, barX + barW * fuelRatio, barY + barH), 11f, 11f, barFuelPaint)
+        canvas.drawRoundRect(RectF(barX, barY, barX + barW, barY + barH), 11f, 11f, barBorderPaint)
+        canvas.drawText("⛽", barX - 4f, barY + barH + 2f, hudSmallPaint)
 
-        canvas.drawText("${eng.speed.toInt()} km/h", 20f, fuelY + fuelH + 40f, hudTextPaint)
+        // ── HP ──────────────────────────────────────────────────────────────
+        val hpY = barY + barH + 10f
+        canvas.drawRoundRect(RectF(barX, hpY, barX + barW, hpY + 14f), 7f, 7f, barBgPaint)
+        if (eng.health > 0f)
+            canvas.drawRoundRect(RectF(barX, hpY, barX + barW * eng.health, hpY + 14f), 7f, 7f, barHpPaint)
+        canvas.drawRoundRect(RectF(barX, hpY, barX + barW, hpY + 14f), 7f, 7f, barBorderPaint)
+        canvas.drawText("❤", barX - 4f, hpY + 14f, hudSmallPaint)
 
-        canvas.drawText("${eng.position.toInt()} m", width / 2f - 60f, 50f, hudTextPaint)
+        // ── Prędkość ─────────────────────────────────────────────────────────
+        val speedStr = "${eng.speedKmh.coerceAtLeast(0f).toInt()} km/h"
+        canvas.drawText(speedStr, pad, hpY + 56f, hudTextPaint)
 
-        canvas.drawText("💰 ${eng.coins}", width - 200f, 50f, hudTextPaint)
+        // ── Dystans ──────────────────────────────────────────────────────────
+        val distStr = "${eng.positionM.toInt()} m"
+        canvas.drawText(distStr, width / 2f - 60f, pad + 46f, hudTextPaint)
 
-        val gearText = "Bieg: ${eng.currentGear}"
-        canvas.drawText(gearText, width - 180f, 90f, hudSmallPaint)
+        // ── Monety ────────────────────────────────────────────────────────────
+        canvas.drawText("💰 ${eng.coins}", width - 210f, pad + 46f, hudTextPaint)
 
-        val hpW = 120f; val hpX = 20f; val hpY = fuelY + fuelH + 60f
-        val hpBg = Paint().apply { color = Color.parseColor("#33FFFFFF") }
-        val hpFill = Paint().apply { color = Color.parseColor("#FF2D55") }
-        canvas.drawRoundRect(RectF(hpX, hpY, hpX + hpW, hpY + 14f), 7f, 7f, hpBg)
-        canvas.drawRoundRect(RectF(hpX, hpY, hpX + hpW * eng.health, hpY + 14f), 7f, 7f, hpFill)
-        canvas.drawText("❤", hpX - 5f, hpY + 16f, hudSmallPaint)
+        // ── Bieg ─────────────────────────────────────────────────────────────
+        canvas.drawText("Bieg: ${eng.currentGear}", width - 170f, pad + 80f, hudSmallPaint)
+
+        // ── Nitro ────────────────────────────────────────────────────────────
+        if (eng.isNitroActive) {
+            val nitroPaintHud = Paint().apply {
+                color = Color.parseColor("#FF6B00")
+                textSize = 28f
+                textAlign = Paint.Align.CENTER
+                setShadowLayer(6f, 0f, 0f, Color.parseColor("#FF6B00"))
+            }
+            canvas.drawText("🔥 NITRO!", width / 2f, height * 0.88f, nitroPaintHud)
+        }
     }
 
     private fun drawPlaceholder(canvas: Canvas) {
-        canvas.drawColor(Color.parseColor("#0D0D0F"))
-        val p = Paint().apply { color = Color.WHITE; textSize = 40f; textAlign = Paint.Align.CENTER }
+        canvas.drawColor(Color.parseColor("#0A1628"))
+        val p = Paint().apply { color = Color.WHITE; textSize = 44f; textAlign = Paint.Align.CENTER }
         canvas.drawText("Ładowanie...", width / 2f, height / 2f, p)
     }
 }

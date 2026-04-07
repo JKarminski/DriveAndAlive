@@ -2,204 +2,414 @@ package com.example.driveandalive.ui.game
 
 import com.example.driveandalive.database.entities.VehicleStats
 import com.example.driveandalive.network.CurrentWeather
+import org.jbox2d.collision.shapes.ChainShape
+import org.jbox2d.collision.shapes.CircleShape
+import org.jbox2d.collision.shapes.PolygonShape
+import org.jbox2d.common.Vec2
+import org.jbox2d.dynamics.*
+import org.jbox2d.dynamics.joints.RevoluteJointDef
+import org.jbox2d.dynamics.joints.WheelJoint
+import org.jbox2d.dynamics.joints.WheelJointDef
 import kotlin.math.*
 
-class GameEngine(private val stats: VehicleStats, private val weather: CurrentWeather?) {
+/** Rodzaje map – każda ma własną funkcję generowania terenu */
+enum class MapType {
+    PRAIRIE,      // lekkie pagórki (domyślna)
+    MOUNTAINS,    // strome góry
+    ARCTIC,       // ślisko + pagórki
+    JUNGLE,       // gęste falowania
+    SINUSOIDA     // czysta sinusoida testowa
+}
+
+class GameEngine(
+    private val stats: VehicleStats,
+    private val weather: CurrentWeather?,
+    val mapType: MapType = MapType.PRAIRIE,
+    /** Szerokość ekranu w pikselach – potrzebna do sinusoidy */
+    val screenWidthPx: Float = 1080f,
+    /** Wysokość ekranu w pikselach – potrzebna do sinusoidy */
+    val screenHeightPx: Float = 2400f
+) {
 
     companion object {
+        const val TICK_MS = 16L
 
-        const val TICK_MS = 16L           
-        const val TERRAIN_CHUNK = 200f    
-        const val COIN_SPACING = 300f     
+        // ─── Skala świata Box2D ───────────────────────────────────────────
+        // 1 metr Box2D = PTM pikseli ekranu (pixels-to-meter)
+        const val PTM = 80f          // 80 px = 1 m  →  ekran ~13,5 m szeroki
 
-        fun engineToAcceleration(level: Int) = 5f + level * 3f        
-        fun engineToMaxSpeed(level: Int) = 40f + level * 12f          
-        fun gripToFriction(level: Int) = 0.85f + level * 0.015f       
-        fun fuelLevelToCapacity(level: Int) = 100f + level * 50f      
-        fun durabilityToHits(level: Int) = level                       
+        // Teren: odległość między werteksami łańcucha (w metrach Box2D)
+        const val TERRAIN_STEP_M = 0.5f
+
+        // Ile punktów terenu trzymamy w buforze
+        const val TERRAIN_BUFFER = 600
+
+        // Nowe punkty generujemy gdy auto jest bliżej niż tyle punktów od końca
+        const val TERRAIN_AHEAD = 200
+
+        const val COIN_SPACING = 8f       // metry Box2D między monetami
+
+        // Współczynniki pojazdów
+        fun engineToTorque(level: Int)    = 80f   + level * 40f
+        fun engineToMaxSpeed(level: Int)  = 20f   + level * 8f    // m/s (Box2D)
+        fun gripToFriction(level: Int)    = 0.9f  + level * 0.05f
+        fun fuelLevelToCapacity(level: Int) = 100f + level * 50f
     }
 
-    var position = 0f          
-    var speed = 0f             
-    var fuel = fuelLevelToCapacity(stats.fuelLevel)
-    var health = 1.0f
-    var coins = 0
+    // ─── Świat Box2D ─────────────────────────────────────────────────────
+    val world = World(Vec2(0f, -20f))   // grawitacja −20 m/s² (agresywna)
+
+    // ─── Ciała fizyczne ──────────────────────────────────────────────────
+    lateinit var chassisBody: Body      // nadwozie
+    lateinit var frontWheelBody: Body
+    lateinit var rearWheelBody: Body
+    lateinit var frontWheelJoint: WheelJoint
+    lateinit var rearWheelJoint: WheelJoint
+
+    // ─── Teren ───────────────────────────────────────────────────────────
+    /** Lista punktów terenu (Y w metrach Box2D, X = index * TERRAIN_STEP_M) */
+    val terrainPoints = mutableListOf<Float>()
+    private var terrainBody: Body? = null
+    private var nextTerrainIdx = 0           // następny indeks do dodania
+
+    // ─── Monety ──────────────────────────────────────────────────────────
+    val coinPositions = mutableSetOf<Float>()  // X w metrach Box2D
+    private var nextCoinX = COIN_SPACING
+
+    // ─── Stan gry ────────────────────────────────────────────────────────
+    var fuel       = fuelLevelToCapacity(stats.fuelLevel)
+    var health     = 1.0f
+    var coins      = 0
+    var isGameOver = false
+    var endReason  = "fuel"
+    var maxSpeedMs = 0f
+    var gearChanges = 0
     var currentGear = 1
     var isAutoGearbox = false
-    var hasNitro = false
-    var hasShield = false
-    var hasMagnet = false
-    var isGameOver = false
-    var endReason = "fuel"
-    var maxSpeed = 0f
-    var gearChanges = 0
+    var hasNitro   = false
+    var hasShield  = false
+    var hasMagnet  = false
     var isNitroActive = false
 
-    val maxSpeedKmh = engineToMaxSpeed(stats.engineLevel)
-    val acceleration = engineToAcceleration(stats.engineLevel)
-    var gripModifier = gripToFriction(stats.gripLevel) * (weather?.gripModifier ?: 1f)
-    val fuelCapacity = fuelLevelToCapacity(stats.fuelLevel) * if (false) 1.5f else 1f  
-    val maxHits = durabilityToHits(stats.durabilityLevel)
-    var hitsReceived = 0
-
-    val terrain = mutableListOf<Float>()
-    val coinPositions = mutableSetOf<Float>()
-    private var nextTerrainX = 0f
-    private var random = java.util.Random(42)
-
-    var gasPressed = false
+    var gasPressed     = false
     var reversePressed = false
-    var nitroPressedThisRound = false
 
+    val fuelCapacity   = fuelLevelToCapacity(stats.fuelLevel)
+    val maxTorque      = engineToTorque(stats.engineLevel)
+    val maxSpeedLimit  = engineToMaxSpeed(stats.engineLevel)
+    val wheelFriction  = gripToFriction(stats.gripLevel) * (weather?.gripModifier ?: 1f)
+
+    private val random = java.util.Random(42)
+
+    // ─── Sinusoida: konwersja parametrów ─────────────────────────────────
+    // Wysokość środka ekranu w metrach Box2D (oś Y w górę)
+    // Ekran: top = screenHeightPx / PTM.  Środek ekranu = screenHeightPx / 2 / PTM
+    // Teren leży "na środku ekranu" gdy Y_Box2D ≈ screenHeightPx/2/PTM
+    private val screenHeightM  get() = screenHeightPx / PTM   // ~30 m
+    private val screenWidthM   get() = screenWidthPx  / PTM   // ~13.5 m
+
+    // Środek Y w metrach Box2D (kamera będzie tu wycentrowana na aucie)
+    // Ustawiamy absolutną wartość Y terenu tak, żeby auto w spoczynku
+    // pojawiało się na wysokości 55% ekranu od góry.
+    private val baseTerrainY   get() = screenHeightM * 0.30f  // "poziom 0" terenu
+
+    // Amplituda sinusoidy: 10% od góry / dołu → 80% ampitudy ekranu / 2
+    private val sinAmplitude  get() = screenHeightM * 0.40f   // od środka do szczytu
+
+    // Jeden okres = szerokość ekranu
+    private val sinPeriodM    get() = screenWidthM
+
+    // ─── Init ─────────────────────────────────────────────────────────────
     init {
-        generateInitialTerrain()
-        generateCoins()
-
-        fuel = fuelCapacity
+        generateTerrain(TERRAIN_BUFFER)
+        buildTerrainBody()
+        buildCar()
+        spawnCoins()
     }
 
-    private fun generateInitialTerrain() {
-        terrain.clear()
+    // ═══════════════════════════════════════════════════════════════════════
+    //  Generowanie terenu
+    // ═══════════════════════════════════════════════════════════════════════
 
-        repeat(100) { terrain.add(0f) }
-        nextTerrainX = 100f * 10f
+    private fun terrainYAt(idx: Int): Float {
+        val x = idx * TERRAIN_STEP_M
+        return baseTerrainY + when (mapType) {
 
-        generateMoreTerrain()
-    }
+            MapType.SINUSOIDA -> {
+                // Łagodniejsza sinusoida – 15% wysokości ekranu
+                val omega = 2f * PI.toFloat() / sinPeriodM
+                sin(omega * x) * (screenHeightM * 0.15f)
+            }
 
-    fun generateMoreTerrain() {
-        val startX = terrain.size * 10f
-        val count = 200
-        for (i in 0 until count) {
-            val x = startX + i * 10f
-            val y = (
-                sin(x * 0.005f) * 20f +
-                sin(x * 0.015f) * 10f +
-                sin(x * 0.04f) * 5f +
-                (random.nextFloat() - 0.5f) * 1f
-            )
-            terrain.add(y)
+            MapType.PRAIRIE -> {
+                // Gładkie pagórki, usunięty random
+                sin(x * 0.08f) * 1.5f +
+                sin(x * 0.20f) * 0.8f +
+                sin(x * 0.50f) * 0.2f
+            }
+
+            MapType.MOUNTAINS -> {
+                // Strome, lecz gładkie góry
+                sin(x * 0.06f) * 4.5f +
+                sin(x * 0.15f) * 2.0f +
+                sin(x * 0.40f) * 1.0f
+            }
+
+            MapType.ARCTIC -> {
+                // Długie fale, zero schodków
+                sin(x * 0.10f) * 2.0f +
+                sin(x * 0.25f) * 1.2f
+            }
+
+            MapType.JUNGLE -> {
+                // Gęste fale i nierówności (gładkie)
+                sin(x * 0.12f) * 2.8f +
+                sin(x * 0.30f) * 1.5f +
+                cos(x * 0.50f) * 0.8f
+            }
         }
-        nextTerrainX = terrain.size * 10f
     }
 
-    private fun generateCoins() {
-        var x = COIN_SPACING
-        while (x < nextTerrainX) {
-            coinPositions.add(x)
-            x += COIN_SPACING + random.nextFloat() * 100f
+    private fun generateTerrain(count: Int) {
+        val startIdx = terrainPoints.size
+        repeat(count) { i ->
+            terrainPoints.add(terrainYAt(startIdx + i))
+        }
+        nextTerrainIdx = terrainPoints.size
+    }
+
+    /** Tworzy (lub odtwarza) statyczne ciało terenu jako ChainShape */
+    private fun buildTerrainBody() {
+        // Usuń stary teren
+        terrainBody?.let { world.destroyBody(it) }
+
+        val bDef = BodyDef().apply { type = BodyType.STATIC }
+        val body = world.createBody(bDef)
+
+        val verts = Array(terrainPoints.size) { i ->
+            Vec2(i * TERRAIN_STEP_M, terrainPoints[i])
+        }
+
+        val chain = ChainShape()
+        chain.createChain(verts, verts.size)
+
+        val fDef = FixtureDef().apply {
+            shape = chain
+            friction = 0.8f
+            restitution = 0.05f
+        }
+        body.createFixture(fDef)
+        terrainBody = body
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  Budowanie samochodu
+    // ═══════════════════════════════════════════════════════════════════════
+
+    private fun buildCar() {
+        val spawnX = 3f   // metry od początku
+        val spawnY = terrainYAt(6) + 2.5f   // trochę nad terenem
+
+        // --- Nadwozie ---
+        val chassisDef = BodyDef().apply {
+            type = BodyType.DYNAMIC
+            position.set(spawnX, spawnY)
+        }
+        chassisBody = world.createBody(chassisDef)
+
+        // Kształt nadwozia: prostokąt 2.2 × 0.7 m
+        val chassisShape = PolygonShape()
+        chassisShape.setAsBox(1.1f, 0.35f)
+
+        val chassisFixture = FixtureDef().apply {
+            shape = chassisShape
+            density = 2.5f     // Zwiększamy ciężar żeby mocniej dociskało
+            friction = 0.3f
+            restitution = 0.1f
+        }
+        chassisBody.createFixture(chassisFixture)
+
+        // --- Koła ---
+        val wheelRadius = 0.42f
+
+        frontWheelBody = createWheel(spawnX + 0.85f, spawnY - 0.35f, wheelRadius)
+        rearWheelBody  = createWheel(spawnX - 0.85f, spawnY - 0.35f, wheelRadius)
+
+        // --- WheelJoint (zawieszenie) ---
+        val axisY = Vec2(0f, 1f)   // sprężyna w pionie
+
+        val wjdFront = WheelJointDef().apply {
+            initialize(chassisBody, frontWheelBody, frontWheelBody.position, axisY)
+            enableMotor = true
+            maxMotorTorque = maxTorque
+            motorSpeed = 0f
+            frequencyHz = 5f       // twardsze suspension
+            dampingRatio = 0.8f
+        }
+        frontWheelJoint = world.createJoint(wjdFront) as WheelJoint
+
+        val wjdRear = WheelJointDef().apply {
+            initialize(chassisBody, rearWheelBody, rearWheelBody.position, axisY)
+            enableMotor = true
+            maxMotorTorque = maxTorque
+            motorSpeed = 0f
+            frequencyHz = 5f
+            dampingRatio = 0.8f
+        }
+        rearWheelJoint = world.createJoint(wjdRear) as WheelJoint
+    }
+
+    private fun createWheel(x: Float, y: Float, radius: Float): Body {
+        val def = BodyDef().apply {
+            type = BodyType.DYNAMIC
+            position.set(x, y)
+        }
+        val body = world.createBody(def)
+
+        val shape = CircleShape()
+        shape.radius = radius
+
+        val fxDef = FixtureDef().apply {
+            this.shape = shape
+            density = 1.2f     // cięższe koła
+            friction = wheelFriction * 1.5f // Lepsza przyczepność!
+            restitution = 0.1f
+        }
+        body.createFixture(fxDef)
+        return body
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  Monety
+    // ═══════════════════════════════════════════════════════════════════════
+
+    private fun spawnCoins() {
+        while (nextCoinX < terrainPoints.size * TERRAIN_STEP_M - COIN_SPACING) {
+            coinPositions.add(nextCoinX)
+            nextCoinX += COIN_SPACING + random.nextFloat() * COIN_SPACING
         }
     }
 
-    fun getCurrentTerrainAngle(): Float {
-        val idx = (position / 10f).toInt().coerceIn(1, terrain.size - 2)
-        val dy = terrain[idx + 1] - terrain[idx - 1]
-        val dx = 20f
-        return atan2(dy, dx)
-    }
-
-    fun getTerrainY(posX: Float): Float {
-        val idx = (posX / 10f).toInt().coerceIn(0, terrain.size - 1)
-        return terrain[idx]
-    }
+    // ═══════════════════════════════════════════════════════════════════════
+    //  Pętla gry
+    // ═══════════════════════════════════════════════════════════════════════
 
     fun update() {
         if (isGameOver) return
 
-        val dt = TICK_MS / 1000f   
-        val angle = getCurrentTerrainAngle()
-        val slopeEffect = sin(angle)  
+        val dt = TICK_MS / 1000f
 
-        if (isAutoGearbox) autoShiftGear()
-
-        val effectiveMax = when {
-            isNitroActive -> maxSpeedKmh * 1.5f
-            else -> maxSpeedKmh * gearSpeedFactor()
-        }
+        // ── Silnik kół ─────────────────────────────────────────────────────
+        val currentSpeedMs = chassisBody.linearVelocity.x
 
         when {
-            gasPressed && speed >= 0 -> {
-                // Uphill reduces acceleration strongly, downhill helps
-                val accel = acceleration * gripModifier - slopeEffect * 60f
-                speed = (speed + accel * dt).coerceAtMost(effectiveMax)
+            gasPressed -> {
+                val targetOmega = -(maxSpeedLimit * 1.2f) / 0.42f   // Zwiększyłem prędkość max do limitu pedału
+                val torque = if (isNitroActive) maxTorque * 2.0f else maxTorque * 1.5f
+                frontWheelJoint.motorSpeed = targetOmega
+                frontWheelJoint.maxMotorTorque = torque
+                rearWheelJoint.motorSpeed      = targetOmega
+                rearWheelJoint.maxMotorTorque  = torque
             }
             reversePressed -> {
-                speed = (speed - acceleration * 0.6f * dt).coerceAtLeast(-effectiveMax * 0.4f)
+                val backOmega = (maxSpeedLimit * 0.8f) / 0.42f
+                frontWheelJoint.motorSpeed = backOmega
+                frontWheelJoint.maxMotorTorque = maxTorque * 1.2f
+                rearWheelJoint.motorSpeed      = backOmega
+                rearWheelJoint.maxMotorTorque  = maxTorque * 1.2f
             }
             else -> {
-                val drag = if (speed > 0) -12f else if (speed < 0) 12f else 0f
-                // Stronger gravity on slopes - roll downhill when released
-                val gravity = -slopeEffect * 40f
-                speed += (drag + gravity) * dt
-                if (abs(speed) < 0.5f) speed = 0f
+                // Silnik wyłączony – mały opór silnikowy
+                frontWheelJoint.motorSpeed = 0f
+                frontWheelJoint.maxMotorTorque = maxTorque * 0.08f
+                rearWheelJoint.motorSpeed      = 0f
+                rearWheelJoint.maxMotorTorque  = maxTorque * 0.08f
             }
         }
 
-        val distancePerSec = speed * (1000f / 3600f)  
-        position += distancePerSec * dt
-        position = position.coerceAtLeast(0f)
+        // ── Krok symulacji ─────────────────────────────────────────────────
+        world.step(dt, 8, 3)
 
-        val baseDrain = 2f * (weather?.fuelDrainModifier ?: 1f)
-        val speedDrain = abs(speed) * 0.01f
-        fuel -= (baseDrain + speedDrain) * dt
+        // Wykrywamy lot (jeśli prędkość kół Y wskazuje że obydwa spadają mocno, albo ogólnie auto leci)
+        val inAir = abs(chassisBody.linearVelocity.y) > 1.5f ||
+                (frontWheelBody.linearVelocity.y < -1f && rearWheelBody.linearVelocity.y < -1f)
+
+        // ── Kontrola w locie ───────────────────────────────────────────────
+        if (inAir) {
+            val airTorque = 120f   // ZNACZNIE WIĘKSZA MOC NA PEDAŁACH W POWIETRZU
+            when {
+                gasPressed -> chassisBody.applyTorque(airTorque)     // Przechyl do tyłu
+                reversePressed -> chassisBody.applyTorque(-airTorque) // Przechyl do przodu
+            }
+        }
+
+        // ── Paliwo ─────────────────────────────────────────────────────────
+        val speedMs = abs(chassisBody.linearVelocity.x)
+        val baseDrain = 1.5f * (weather?.fuelDrainModifier ?: 1f)
+        fuel -= (baseDrain + speedMs * 0.04f) * dt
         fuel = fuel.coerceAtLeast(0f)
 
-        val collectRange = if (hasMagnet) 150f else 50f
-        coinPositions.filter { abs(it - position) < collectRange }.also { nearby ->
+        // ── Auto wypadło za ekran / wywróciło się ─────────────────────────
+        val carAngleDeg = Math.toDegrees(chassisBody.angle.toDouble()).toFloat()
+        if (abs(carAngleDeg) > 100f) {
+            isGameOver = true
+            endReason = "crash"
+            return
+        }
+
+        // ── Monety ─────────────────────────────────────────────────────────
+        val carX = chassisBody.position.x
+        val collectRange = if (hasMagnet) 4f else 1.5f
+        coinPositions.filter { abs(it - carX) < collectRange }.also { nearby ->
             coins += nearby.size
             coinPositions.removeAll(nearby.toSet())
         }
 
-        // Auto nie traci już HP na byle górce, po prostu próbuje na nią wjechać
-
-        if (position > nextTerrainX - 2000f) {
-            generateMoreTerrain()
-            generateCoins()
+        // ── Dajemy auto przed terenem ─────────────────────────────────────
+        val idxAhead = (carX / TERRAIN_STEP_M).toInt() + TERRAIN_AHEAD
+        if (idxAhead >= terrainPoints.size - 50) {
+            val oldSize = terrainPoints.size
+            generateTerrain(200)
+            // Przebuduj ciało terenu z nowym łańcuchem
+            buildTerrainBody()
+            spawnCoins()
         }
 
-        if (speed > maxSpeed) maxSpeed = speed
+        if (speedMs > maxSpeedMs) maxSpeedMs = speedMs
 
+        // ── Warunki końca ──────────────────────────────────────────────────
         if (fuel <= 0f) {
             isGameOver = true
             endReason = "fuel"
-        } else if (health <= 0f) {
-            isGameOver = true
-            endReason = "crash"
         }
     }
 
-    private fun receiveDamage() {
-        if (hasShield) { hasShield = false; return }
-        hitsReceived++
-        health = (1f - hitsReceived.toFloat() / maxHits).coerceAtLeast(0f)
+    // ═══════════════════════════════════════════════════════════════════════
+    //  Pomocnicze
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /** Pozycja X auta w metrach Box2D */
+    val positionM: Float get() = chassisBody.position.x
+
+    /** Prędkość auta w km/h (do HUD) – zawsze >= 0 */
+    val speedKmh: Float get() = abs(chassisBody.linearVelocity.x) * 3.6f
+
+    /** Kąt terenu pod autem (radiany) */
+    fun getCurrentTerrainAngle(): Float {
+        val idx = (positionM / TERRAIN_STEP_M).toInt().coerceIn(1, terrainPoints.size - 2)
+        val dy = terrainPoints[idx + 1] - terrainPoints[idx - 1]
+        val dx = TERRAIN_STEP_M * 2f
+        return atan2(dy, dx)
     }
 
-    fun shiftUp() {
-        if (currentGear < 5) {
-            currentGear++
-            gearChanges++
-        }
+    fun getTerrainY(worldX: Float): Float {
+        val idx = (worldX / TERRAIN_STEP_M).toInt().coerceIn(0, terrainPoints.size - 1)
+        return terrainPoints[idx]
     }
 
-    fun shiftDown() {
-        if (currentGear > 1) {
-            currentGear--
-            gearChanges++
-        }
-    }
-
-    private fun gearSpeedFactor(): Float = 0.3f + currentGear * 0.15f
-
-    private fun autoShiftGear() {
-        val ratio = speed / maxSpeedKmh
-        currentGear = when {
-            ratio < 0.2f -> 1
-            ratio < 0.4f -> 2
-            ratio < 0.6f -> 3
-            ratio < 0.8f -> 4
-            else -> 5
-        }
-    }
+    // ── Biegi (kosmetyczne, silnik to torque-based) ────────────────────────
+    fun shiftUp()   { if (currentGear < 5) { currentGear++; gearChanges++ } }
+    fun shiftDown() { if (currentGear > 1) { currentGear--; gearChanges++ } }
 
     fun activateNitro() {
         if (hasNitro && !isNitroActive) {

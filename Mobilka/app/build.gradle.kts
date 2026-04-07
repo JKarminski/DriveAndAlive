@@ -68,6 +68,9 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.11.0"))
     implementation("com.google.firebase:firebase-database")
 
+    // JBox2D – pure-Java port of Box2D, zero NDK needed
+    implementation("org.jbox2d:jbox2d-library:2.2.1.1")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

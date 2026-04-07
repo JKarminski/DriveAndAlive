@@ -14,6 +14,7 @@ import com.example.driveandalive.database.entities.VehicleStats
 import com.example.driveandalive.databinding.ActivityGameBinding
 import com.example.driveandalive.repository.GameRepository
 import com.example.driveandalive.ui.result.ResultActivity
+import com.example.driveandalive.ui.game.MapType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -65,11 +66,27 @@ class GameActivity : AppCompatActivity() {
                 android.util.Log.d("GameActivity", "Weather loaded")
 
                 withContext(Dispatchers.Main) {
-                    gameEngine = GameEngine(statsDb, weather).apply {
+                    // Mapowanie id mapy na enum MapType
+                    val mapType = when (mapId) {
+                        1    -> MapType.PRAIRIE
+                        2    -> MapType.MOUNTAINS
+                        3    -> MapType.ARCTIC
+                        4    -> MapType.JUNGLE
+                        5    -> MapType.SINUSOIDA
+                        else -> MapType.PRAIRIE
+                    }
+                    val dm = resources.displayMetrics
+                    gameEngine = GameEngine(
+                        stats          = statsDb,
+                        weather        = weather,
+                        mapType        = mapType,
+                        screenWidthPx  = dm.widthPixels.toFloat(),
+                        screenHeightPx = dm.heightPixels.toFloat()
+                    ).apply {
                         isAutoGearbox = skills.any { it.skillType == "auto_gearbox" }
-                        hasNitro = skills.any { it.skillType == "nitro" }
-                        hasShield = skills.any { it.skillType == "shield" }
-                        hasMagnet = skills.any { it.skillType == "magnet" }
+                        hasNitro      = skills.any { it.skillType == "nitro" }
+                        hasShield     = skills.any { it.skillType == "shield" }
+                        hasMagnet     = skills.any { it.skillType == "magnet" }
                         if (skills.any { it.skillType == "extra_fuel" }) {
                             fuel *= 1.5f
                         }
@@ -153,13 +170,13 @@ class GameActivity : AppCompatActivity() {
             val vehicleId = profileData?.selectedVehicleId ?: 1
 
             repo.addCoins(gameEngine.coins)
-            repo.updateAfterRun(gameEngine.position.toInt(), gameEngine.coins)
+            repo.updateAfterRun(gameEngine.positionM.toInt(), gameEngine.coins)
             val record = MapRecord(
                 mapId = mapId,
                 vehicleId = vehicleId,
-                distanceMeters = gameEngine.position.toInt(),
+                distanceMeters = gameEngine.positionM.toInt(),
                 coinsEarned = gameEngine.coins,
-                maxSpeedKmh = gameEngine.maxSpeed,
+                maxSpeedKmh = gameEngine.maxSpeedMs * 3.6f,
                 gearChanges = gameEngine.gearChanges,
                 endReason = gameEngine.endReason
             )
@@ -168,9 +185,9 @@ class GameActivity : AppCompatActivity() {
             withContext(Dispatchers.Main) {
 
                 val intent = Intent(this@GameActivity, ResultActivity::class.java).apply {
-                    putExtra("distance", gameEngine.position.toInt())
+                    putExtra("distance", gameEngine.positionM.toInt())
                     putExtra("coins", gameEngine.coins)
-                    putExtra("maxSpeed", gameEngine.maxSpeed)
+                    putExtra("maxSpeed", gameEngine.maxSpeedMs * 3.6f)
                     putExtra("gearChanges", gameEngine.gearChanges)
                     putExtra("endReason", gameEngine.endReason)
                 }

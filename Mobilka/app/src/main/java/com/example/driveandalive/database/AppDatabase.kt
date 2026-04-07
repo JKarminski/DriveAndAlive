@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
         MapRecord::class,
         PlayerProfile::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -41,8 +41,9 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "drive_alive.db"
+                    "drive_alive_v2.db"
                 )
+                    .fallbackToDestructiveMigration() // reset przy zmianie wersji
                     .addCallback(DatabaseCallback())
                     .build()
                 INSTANCE = instance
@@ -107,7 +108,15 @@ abstract class AppDatabase : RoomDatabase() {
                 GameMap(id = 4, name = "Dżungla", description = "Tropikalna burza zmienia wszystko",
                     drawableName = "map_04_jungle", difficultyBase = 2,
                     isUnlocked = false, unlockCost = 600,
-                    hasWeatherApi = true, latitude = -3.4, longitude = -60.0)
+                    hasWeatherApi = true, latitude = -3.4, longitude = -60.0),
+                // ── MAPA TESTOWA – czysta sinusoida ──────────────────────────
+                // Jeden okres = szerokość ekranu
+                // Szczyt (sin=1)  → 10% od góry ekranu
+                // Dół   (sin=-1) → 10% od dołu ekranu
+                GameMap(id = 5, name = "Sinusoida", description = "Testowa mapa – czysta sinusoida falista",
+                    drawableName = "map_05_sinusoida", difficultyBase = 1,
+                    isUnlocked = true, unlockCost = 0,
+                    hasWeatherApi = false)
             )
             database.gameMapDao().insertAll(maps)
 
