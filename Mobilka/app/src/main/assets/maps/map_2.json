@@ -1,0 +1,13 @@
+{
+    "id": 2,
+    "name": "Góry",
+    "description": "Strome zbocza i ostre zakręty",
+    "drawableName": "map_02_mountains",
+    "difficultyBase": 2,
+    "isUnlocked": false,
+    "unlockCost": 400,
+    "hasWeatherApi": false,
+    "latitude": 49.2,
+    "longitude": 19.9,
+    "mapType": "MOUNTAINS"
+}

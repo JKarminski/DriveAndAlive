@@ -44,7 +44,7 @@ abstract class AppDatabase : RoomDatabase() {
                     "drive_alive_v2.db"
                 )
                     .fallbackToDestructiveMigration() // reset przy zmianie wersji
-                    .addCallback(DatabaseCallback())
+                    .addCallback(DatabaseCallback(context))
                     .build()
                 INSTANCE = instance
                 instance
@@ -55,22 +55,22 @@ abstract class AppDatabase : RoomDatabase() {
             synchronized(this) {
                 INSTANCE?.close()
                 INSTANCE = null
-                context.applicationContext.deleteDatabase("drive_alive.db")
+                context.applicationContext.deleteDatabase("drive_alive_v2.db")
             }
         }
     }
 
-    private class DatabaseCallback : RoomDatabase.Callback() {
+    private class DatabaseCallback(private val context: Context) : RoomDatabase.Callback() {
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)
             INSTANCE?.let { database ->
                 CoroutineScope(Dispatchers.IO).launch {
-                    seedDatabase(database)
+                    seedDatabase(database, context)
                 }
             }
         }
 
-        private suspend fun seedDatabase(database: AppDatabase) {
+        private suspend fun seedDatabase(database: AppDatabase, context: Context) {
 
             val vehicles = listOf(
                 Vehicle(id = 1, name = "Terenówka", description = "Solidny SUV do każdego terenu",
@@ -92,33 +92,33 @@ abstract class AppDatabase : RoomDatabase() {
                 )
             }
 
-            val maps = listOf(
-                GameMap(id = 1, name = "Preria", description = "Płaski teren dla początkujących",
-                    drawableName = "map_01_prairie", difficultyBase = 1,
-                    isUnlocked = true, unlockCost = 0,
-                    hasWeatherApi = false),
-                GameMap(id = 2, name = "Góry", description = "Strome zbocza i ostre zakręty",
-                    drawableName = "map_02_mountains", difficultyBase = 2,
-                    isUnlocked = false, unlockCost = 400,
-                    hasWeatherApi = false),
-                GameMap(id = 3, name = "Arktyk", description = "Lód i śnieg – zmienna pogoda!",
-                    drawableName = "map_03_arctic", difficultyBase = 3,
-                    isUnlocked = false, unlockCost = 800,
-                    hasWeatherApi = true, latitude = 69.6, longitude = 18.9),
-                GameMap(id = 4, name = "Dżungla", description = "Tropikalna burza zmienia wszystko",
-                    drawableName = "map_04_jungle", difficultyBase = 2,
-                    isUnlocked = false, unlockCost = 600,
-                    hasWeatherApi = true, latitude = -3.4, longitude = -60.0),
-                // ── MAPA TESTOWA – czysta sinusoida ──────────────────────────
-                // Jeden okres = szerokość ekranu
-                // Szczyt (sin=1)  → 10% od góry ekranu
-                // Dół   (sin=-1) → 10% od dołu ekranu
-                GameMap(id = 5, name = "Sinusoida", description = "Testowa mapa – czysta sinusoida falista",
-                    drawableName = "map_05_sinusoida", difficultyBase = 1,
-                    isUnlocked = true, unlockCost = 0,
-                    hasWeatherApi = false)
-            )
-            database.gameMapDao().insertAll(maps)
+            val mapsList = mutableListOf<GameMap>()
+            try {
+                val mapFiles = context.assets.list("maps") ?: emptyArray()
+                for (file in mapFiles) {
+                    if (file.endsWith(".json")) {
+                        val jsonString = context.assets.open("maps/$file").bufferedReader().use { it.readText() }
+                        val json = org.json.JSONObject(jsonString)
+                        mapsList.add(
+                            GameMap(
+                                id = json.getInt("id"),
+                                name = json.getString("name"),
+                                description = json.getString("description"),
+                                drawableName = json.getString("drawableName"),
+                                difficultyBase = json.getInt("difficultyBase"),
+                                isUnlocked = json.getBoolean("isUnlocked"),
+                                unlockCost = json.getInt("unlockCost"),
+                                hasWeatherApi = json.getBoolean("hasWeatherApi"),
+                                latitude = if (json.has("latitude")) json.getDouble("latitude") else 52.0,
+                                longitude = if (json.has("longitude")) json.getDouble("longitude") else 21.0
+                            )
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            database.gameMapDao().insertAll(mapsList)
 
             database.playerProfileDao().insertProfile(
                 PlayerProfile(id = 1, coins = 500)

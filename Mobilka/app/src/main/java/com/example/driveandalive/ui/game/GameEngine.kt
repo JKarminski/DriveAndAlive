@@ -12,7 +12,7 @@ import org.jbox2d.dynamics.joints.WheelJoint
 import org.jbox2d.dynamics.joints.WheelJointDef
 import kotlin.math.*
 
-/** Rodzaje map – każda ma własną funkcję generowania terenu */
+/** Rodzaje map – każda ma własną funkcję generowania terenu jako fallback */
 enum class MapType {
     PRAIRIE,      // lekkie pagórki (domyślna)
     MOUNTAINS,    // strome góry
@@ -21,10 +21,19 @@ enum class MapType {
     SINUSOIDA     // czysta sinusoida testowa
 }
 
+/** Definiuje strukturalny składnik terenu wczytywany z pliku JSON */
+data class TerrainLayer(
+    val type: String,
+    val amplitude: Float,
+    val frequency: Float
+)
+
 class GameEngine(
     private val stats: VehicleStats,
     private val weather: CurrentWeather?,
     val mapType: MapType = MapType.PRAIRIE,
+    /** Opcjonalna warstwowa mapa (z pliku JSON) */
+    val terrainLayers: List<TerrainLayer>? = null,
     /** Szerokość ekranu w pikselach – potrzebna do sinusoidy */
     val screenWidthPx: Float = 1080f,
     /** Wysokość ekranu w pikselach – potrzebna do sinusoidy */
@@ -49,8 +58,8 @@ class GameEngine(
 
         const val COIN_SPACING = 8f       // metry Box2D między monetami
 
-        // Współczynniki pojazdów
-        fun engineToTorque(level: Int)    = 80f   + level * 40f
+        // Współczynniki pojazdów (Zredukowane aby nie latały od razu w kosmos)
+        fun engineToTorque(level: Int)    = 40f   + level * 20f
         fun engineToMaxSpeed(level: Int)  = 20f   + level * 8f    // m/s (Box2D)
         fun gripToFriction(level: Int)    = 0.9f  + level * 0.05f
         fun fuelLevelToCapacity(level: Int) = 100f + level * 50f
@@ -72,9 +81,12 @@ class GameEngine(
     private var terrainBody: Body? = null
     private var nextTerrainIdx = 0           // następny indeks do dodania
 
-    // ─── Monety ──────────────────────────────────────────────────────────
+    // ─── Monety i Paliwo ──────────────────────────────────────────────────────────
     val coinPositions = mutableSetOf<Float>()  // X w metrach Box2D
     private var nextCoinX = COIN_SPACING
+    
+    val fuelPositions = mutableSetOf<Float>()
+    private var nextFuelX = 500f // pojawia się równo co 500 metrów realnych w grze
 
     // ─── Stan gry ────────────────────────────────────────────────────────
     var fuel       = fuelLevelToCapacity(stats.fuelLevel)
@@ -98,6 +110,11 @@ class GameEngine(
     val maxTorque      = engineToTorque(stats.engineLevel)
     val maxSpeedLimit  = engineToMaxSpeed(stats.engineLevel)
     val wheelFriction  = gripToFriction(stats.gripLevel) * (weather?.gripModifier ?: 1f)
+
+    // Parametry biegów: index 0 to neutralny (nieużywany), 1-5 to biegi w grze
+    private val gearSpeedMultipliers = floatArrayOf(0f, 0.35f, 0.55f, 0.75f, 0.90f, 1.0f)
+    private val gearTorqueMultipliers = floatArrayOf(0f, 1.5f, 1.0f, 0.7f, 0.5f, 0.35f)
+    private val gearFuelMultipliers = floatArrayOf(0f, 2.0f, 1.5f, 1.2f, 1.0f, 0.8f) // Mniejsze spalanie wejdzie dla wyższych biegów
 
     private val random = java.util.Random(42)
 
@@ -124,7 +141,7 @@ class GameEngine(
         generateTerrain(TERRAIN_BUFFER)
         buildTerrainBody()
         buildCar()
-        spawnCoins()
+        spawnItems()
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -133,6 +150,21 @@ class GameEngine(
 
     private fun terrainYAt(idx: Int): Float {
         val x = idx * TERRAIN_STEP_M
+        
+        // Jeśli posiadamy layout JSON z warstwami, po prostu dodajemy wyniki matematyczne warstw
+        if (!terrainLayers.isNullOrEmpty()) {
+            var yDelta = 0f
+            for (layer in terrainLayers) {
+                if (layer.type == "sin") {
+                    yDelta += sin(x * layer.frequency) * layer.amplitude
+                } else if (layer.type == "cos") {
+                    yDelta += cos(x * layer.frequency) * layer.amplitude
+                }
+            }
+            return baseTerrainY + yDelta
+        }
+
+        // Fallback jeśli brakuje konfiguracji JSON
         return baseTerrainY + when (mapType) {
 
             MapType.SINUSOIDA -> {
@@ -227,6 +259,7 @@ class GameEngine(
             friction = 0.3f
             restitution = 0.1f
         }
+        chassisDef.angularDamping = 3.0f // Znacznie większy opór angularny zapobiega ciągłym gwałtownym obrotom
         chassisBody.createFixture(chassisFixture)
 
         // --- Koła ---
@@ -280,13 +313,17 @@ class GameEngine(
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    //  Monety
+    //  Monety i przedmioty
     // ═══════════════════════════════════════════════════════════════════════
 
-    private fun spawnCoins() {
+    private fun spawnItems() {
         while (nextCoinX < terrainPoints.size * TERRAIN_STEP_M - COIN_SPACING) {
             coinPositions.add(nextCoinX)
             nextCoinX += COIN_SPACING + random.nextFloat() * COIN_SPACING
+        }
+        while (nextFuelX < terrainPoints.size * TERRAIN_STEP_M - 50f) {
+            fuelPositions.add(nextFuelX)
+            nextFuelX += 500f // Paliwo równo co 500 dystansu fizycznego
         }
     }
 
@@ -299,17 +336,34 @@ class GameEngine(
 
         val dt = TICK_MS / 1000f
 
+        // ── Aktualne parametry biegu ───────────────────────────────────────
+        val speedLimit = maxSpeedLimit * gearSpeedMultipliers[currentGear.coerceIn(1, 5)]
+        val torqueLimit = maxTorque * gearTorqueMultipliers[currentGear.coerceIn(1, 5)]
+        val fuelMultiplier = gearFuelMultipliers[currentGear.coerceIn(1, 5)]
+
+        // ── Kąt auta (znormalizowany w stopniach do zakresu [-180, 180]) ───
+        var carAngleDeg = Math.toDegrees(chassisBody.angle.toDouble()).toFloat() % 360f
+        if (carAngleDeg < -180f) carAngleDeg += 360f
+        if (carAngleDeg > 180f) carAngleDeg -= 360f
+
         // ── Silnik kół ─────────────────────────────────────────────────────
         val currentSpeedMs = chassisBody.linearVelocity.x
 
         when {
             gasPressed -> {
-                val targetOmega = -(maxSpeedLimit * 1.2f) / 0.42f   // Zwiększyłem prędkość max do limitu pedału
-                val torque = if (isNitroActive) maxTorque * 2.0f else maxTorque * 1.5f
+                val targetOmega = -(speedLimit * 1.2f) / 0.42f
+                var torqueToApply = if (isNitroActive) torqueLimit * 2.0f else torqueLimit
+                
+                // Zapobieganie wheelie (przód w górze) - zmniejszamy moment, gdy się mocno podnosi
+                // Kąt dodatni oznacza podnoszenie przodu (w Box2D kręci przeciwzegarowo)
+                if (carAngleDeg > 20f && carAngleDeg < 80f) {
+                    torqueToApply *= 0.05f // Drastycznie obcinamy przyspieszenie aby wyrównać nos auta
+                }
+
                 frontWheelJoint.motorSpeed = targetOmega
-                frontWheelJoint.maxMotorTorque = torque
+                frontWheelJoint.maxMotorTorque = torqueToApply
                 rearWheelJoint.motorSpeed      = targetOmega
-                rearWheelJoint.maxMotorTorque  = torque
+                rearWheelJoint.maxMotorTorque  = torqueToApply
             }
             reversePressed -> {
                 val backOmega = (maxSpeedLimit * 0.8f) / 0.42f
@@ -319,7 +373,7 @@ class GameEngine(
                 rearWheelJoint.maxMotorTorque  = maxTorque * 1.2f
             }
             else -> {
-                // Silnik wyłączony – mały opór silnikowy
+                // Silnik wyłączony – mały opór
                 frontWheelJoint.motorSpeed = 0f
                 frontWheelJoint.maxMotorTorque = maxTorque * 0.08f
                 rearWheelJoint.motorSpeed      = 0f
@@ -330,54 +384,69 @@ class GameEngine(
         // ── Krok symulacji ─────────────────────────────────────────────────
         world.step(dt, 8, 3)
 
-        // Wykrywamy lot (jeśli prędkość kół Y wskazuje że obydwa spadają mocno, albo ogólnie auto leci)
+        // Wykrywamy lot
         val inAir = abs(chassisBody.linearVelocity.y) > 1.5f ||
                 (frontWheelBody.linearVelocity.y < -1f && rearWheelBody.linearVelocity.y < -1f)
 
-        // ── Kontrola w locie ───────────────────────────────────────────────
+        // ── Kontrola w locie (flipy i backflipy) ───────────────────────────
         if (inAir) {
-            val airTorque = 120f   // ZNACZNIE WIĘKSZA MOC NA PEDAŁACH W POWIETRZU
+            val airTorque = 30f // Dużo niższa wartość aby lepiej kontrolować auto w powietrzu
             when {
-                gasPressed -> chassisBody.applyTorque(airTorque)     // Przechyl do tyłu
-                reversePressed -> chassisBody.applyTorque(-airTorque) // Przechyl do przodu
+                gasPressed -> chassisBody.applyTorque(airTorque)     // Backflip
+                reversePressed -> chassisBody.applyTorque(-airTorque) // Frontflip
             }
         }
 
-        // ── Paliwo ─────────────────────────────────────────────────────────
+        // ── Paliwo wyliczane wg biegu i obrotów silnika ────────────────────
         val speedMs = abs(chassisBody.linearVelocity.x)
         val baseDrain = 1.5f * (weather?.fuelDrainModifier ?: 1f)
-        fuel -= (baseDrain + speedMs * 0.04f) * dt
+        
+        // "Wycie silnika": jeśli próbujemy jechać blisko lub powyżej limitu biegu - spala dużo więcej (zmusza do zmiany)
+        val rpmFactor = if (speedMs > speedLimit * 0.90f && gasPressed) 3.5f else (speedMs / speedLimit.coerceAtLeast(0.1f)).coerceIn(0.1f, 1.5f)
+        
+        fuel -= (baseDrain + rpmFactor * fuelMultiplier * 2.5f) * dt
         fuel = fuel.coerceAtLeast(0f)
 
-        // ── Auto wypadło za ekran / wywróciło się ─────────────────────────
-        val carAngleDeg = Math.toDegrees(chassisBody.angle.toDouble()).toFloat()
-        if (abs(carAngleDeg) > 100f) {
+        // ── Sprawdzanie wywrotki (tylko kiedy dach uderza w ziemie, a nie z samego kąta) ───
+        val isUpsideDown = abs(carAngleDeg) > 90f
+        val carX = chassisBody.position.x
+        val terrainY = getTerrainY(carX)
+        val heightAboveTerrain = chassisBody.position.y - terrainY
+        
+        // Jeśli auto odwrócone dogóry kołami i nisko nad terenem -> wypadek
+        if (isUpsideDown && heightAboveTerrain < 1.3f) {
             isGameOver = true
             endReason = "crash"
             return
         }
 
         // ── Monety ─────────────────────────────────────────────────────────
-        val carX = chassisBody.position.x
         val collectRange = if (hasMagnet) 4f else 1.5f
         coinPositions.filter { abs(it - carX) < collectRange }.also { nearby ->
             coins += nearby.size
             coinPositions.removeAll(nearby.toSet())
         }
+        
+        // ── Kanistry z Paliwem ──────────────────────────────────────────────
+        fuelPositions.filter { abs(it - carX) < collectRange }.also { nearby ->
+            if (nearby.isNotEmpty()) {
+                fuel = fuelCapacity
+                health = min(1.0f, health + 0.2f) // Lekkie leczenie dodatkowo
+                fuelPositions.removeAll(nearby.toSet())
+            }
+        }
 
-        // ── Dajemy auto przed terenem ─────────────────────────────────────
+        // ── Przebudowa terenu z przodu ─────────────────────────────────────
         val idxAhead = (carX / TERRAIN_STEP_M).toInt() + TERRAIN_AHEAD
         if (idxAhead >= terrainPoints.size - 50) {
-            val oldSize = terrainPoints.size
             generateTerrain(200)
-            // Przebuduj ciało terenu z nowym łańcuchem
             buildTerrainBody()
-            spawnCoins()
+            spawnItems()
         }
 
         if (speedMs > maxSpeedMs) maxSpeedMs = speedMs
 
-        // ── Warunki końca ──────────────────────────────────────────────────
+        // ── Warunki końca gry z braku paliwa ───────────────────────────────
         if (fuel <= 0f) {
             isGameOver = true
             endReason = "fuel"

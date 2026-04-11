@@ -1,0 +1,13 @@
+{
+    "id": 4,
+    "name": "Dżungla",
+    "description": "Tropikalna burza zmienia wszystko",
+    "drawableName": "map_04_jungle",
+    "difficultyBase": 2,
+    "isUnlocked": false,
+    "unlockCost": 600,
+    "hasWeatherApi": true,
+    "latitude": -3.4,
+    "longitude": -60.0,
+    "mapType": "JUNGLE"
+}

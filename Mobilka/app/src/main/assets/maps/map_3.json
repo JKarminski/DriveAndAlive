@@ -1,0 +1,13 @@
+{
+    "id": 3,
+    "name": "Arktyk",
+    "description": "Lód i śnieg – zmienna pogoda!",
+    "drawableName": "map_03_arctic",
+    "difficultyBase": 3,
+    "isUnlocked": false,
+    "unlockCost": 800,
+    "hasWeatherApi": true,
+    "latitude": 69.6,
+    "longitude": 18.9,
+    "mapType": "ARCTIC"
+}

@@ -1,0 +1,13 @@
+{
+    "id": 1,
+    "name": "Preria",
+    "description": "Płaski teren dla początkujących",
+    "drawableName": "map_01_prairie",
+    "difficultyBase": 1,
+    "isUnlocked": true,
+    "unlockCost": 0,
+    "hasWeatherApi": false,
+    "latitude": 52.0,
+    "longitude": 21.0,
+    "mapType": "PRAIRIE"
+}

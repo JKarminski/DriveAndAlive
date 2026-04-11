@@ -1,0 +1,5 @@
+[
+  { "type": "sin", "amplitude": 1.5, "frequency": 0.08 },
+  { "type": "sin", "amplitude": 0.8, "frequency": 0.20 },
+  { "type": "sin", "amplitude": 0.2, "frequency": 0.50 }
+]

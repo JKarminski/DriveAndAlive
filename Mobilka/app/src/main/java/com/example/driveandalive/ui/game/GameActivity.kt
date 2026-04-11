@@ -65,6 +65,29 @@ class GameActivity : AppCompatActivity() {
                 val weather = map?.let { repo.getWeatherForMap(it) }?.current
                 android.util.Log.d("GameActivity", "Weather loaded")
 
+                var layoutConfig: List<com.example.driveandalive.ui.game.TerrainLayer>? = null
+                try {
+                    val layoutJson = try {
+                        assets.open("map_layouts/layout_$mapId.json").bufferedReader().use { it.readText() }
+                    } catch(e: Exception) { null }
+                    
+                    if (layoutJson != null) {
+                        val array = org.json.JSONArray(layoutJson)
+                        val layers = mutableListOf<com.example.driveandalive.ui.game.TerrainLayer>()
+                        for(i in 0 until array.length()) {
+                            val obj = array.getJSONObject(i)
+                            layers.add(com.example.driveandalive.ui.game.TerrainLayer(
+                                obj.getString("type"),
+                                obj.getDouble("amplitude").toFloat(),
+                                obj.getDouble("frequency").toFloat()
+                            ))
+                        }
+                        layoutConfig = layers
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("GameActivity", "Error loading layout: ${e.message}")
+                }
+
                 withContext(Dispatchers.Main) {
                     // Mapowanie id mapy na enum MapType
                     val mapType = when (mapId) {
@@ -80,6 +103,7 @@ class GameActivity : AppCompatActivity() {
                         stats          = statsDb,
                         weather        = weather,
                         mapType        = mapType,
+                        terrainLayers  = layoutConfig,
                         screenWidthPx  = dm.widthPixels.toFloat(),
                         screenHeightPx = dm.heightPixels.toFloat()
                     ).apply {

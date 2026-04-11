@@ -1,0 +1,13 @@
+{
+    "id": 5,
+    "name": "Sinusoida",
+    "description": "Testowa mapa – czysta sinusoida falista",
+    "drawableName": "map_05_sinusoida",
+    "difficultyBase": 1,
+    "isUnlocked": true,
+    "unlockCost": 0,
+    "hasWeatherApi": false,
+    "latitude": 52.0,
+    "longitude": 21.0,
+    "mapType": "SINUSOIDA"
+}

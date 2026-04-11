@@ -128,6 +128,7 @@ class GameView @JvmOverloads constructor(
         drawSky(canvas)
         drawParallax(canvas, camX)
         drawTerrain(canvas, eng, camX, camY)
+        drawFuelCans(canvas, eng, camX, camY)
         drawCoins(canvas, eng, camX, camY)
         drawCar(canvas, eng, camX, camY)
         drawHUD(canvas, eng)
@@ -225,6 +226,25 @@ class GameView @JvmOverloads constructor(
             canvas.drawCircle(sx, sy, 22f, coinPaint)
             canvas.drawCircle(sx, sy, 22f, coinRingPaint)
             canvas.drawText("$", sx, sy + 7f, coinTextPaint)
+        }
+    }
+    
+    private val fuelCanPaint = Paint().apply { color = Color.parseColor("#E53935"); style = Paint.Style.FILL; isAntiAlias = true }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  Paliwo (Kanistry)
+    // ═══════════════════════════════════════════════════════════════════════
+    private fun drawFuelCans(canvas: Canvas, eng: GameEngine, camX: Float, camY: Float) {
+        for (fuelX in eng.fuelPositions) {
+            val sx = worldToScreenX(fuelX, camX)
+            if (sx < -40f || sx > width + 40f) continue
+            val terrainY = eng.getTerrainY(fuelX)
+            val sy = worldToScreenY(terrainY + 0.8f, camY)
+            
+            // Kanister
+            canvas.drawRoundRect(RectF(sx - 15f, sy - 20f, sx + 15f, sy + 20f), 4f, 4f, fuelCanPaint)
+            canvas.drawRect(RectF(sx - 8f, sy - 25f, sx + 8f, sy - 20f), barBorderPaint) // Korek/uchwyt
+            canvas.drawText("F", sx, sy + 7f, hudSmallPaint)
         }
     }
 
