@@ -44,7 +44,7 @@
         android:layout_marginBottom="24dp"
         android:elevation="8dp" />
 
-    <!-- DEBUG BUTTONS - usuń przed publikacją -->
+    <!-- przyciski do testowania - później USUNĄĆ -->
     <LinearLayout
         android:id="@+id/debug_buttons"
         android:layout_width="wrap_content"
