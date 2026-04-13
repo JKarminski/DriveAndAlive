@@ -25,7 +25,8 @@ enum class MapType {
 data class TerrainLayer(
     val type: String,
     val amplitude: Float,
-    val frequency: Float
+    val frequency: Float,
+    val growth: Float? = null
 )
 
 class GameEngine(
@@ -57,16 +58,10 @@ class GameEngine(
         const val TERRAIN_AHEAD = 200
 
         const val COIN_SPACING = 8f       // metry Box2D między monetami
-
-        // Współczynniki pojazdów (Zredukowane aby nie latały od razu w kosmos)
-        fun engineToTorque(level: Int)    = 40f   + level * 20f
-        fun engineToMaxSpeed(level: Int)  = 20f   + level * 8f    // m/s (Box2D)
-        fun gripToFriction(level: Int)    = 0.9f  + level * 0.05f
-        fun fuelLevelToCapacity(level: Int) = 100f + level * 50f
     }
 
     // ─── Świat Box2D ─────────────────────────────────────────────────────
-    val world = World(Vec2(0f, -20f))   // grawitacja −20 m/s² (agresywna)
+    val world = World(Vec2(0f, GamePhysicsConfig.GRAVITY_Y))   // Grawitacja z konfiguracji
 
     // ─── Ciała fizyczne ──────────────────────────────────────────────────
     lateinit var chassisBody: Body      // nadwozie
@@ -89,7 +84,7 @@ class GameEngine(
     private var nextFuelX = 500f // pojawia się równo co 500 metrów realnych w grze
 
     // ─── Stan gry ────────────────────────────────────────────────────────
-    var fuel       = fuelLevelToCapacity(stats.fuelLevel)
+    var fuel       = GamePhysicsConfig.fuelLevelToCapacity(stats.fuelLevel)
     var health     = 1.0f
     var coins      = 0
     var isGameOver = false
@@ -106,15 +101,10 @@ class GameEngine(
     var gasPressed     = false
     var reversePressed = false
 
-    val fuelCapacity   = fuelLevelToCapacity(stats.fuelLevel)
-    val maxTorque      = engineToTorque(stats.engineLevel)
-    val maxSpeedLimit  = engineToMaxSpeed(stats.engineLevel)
-    val wheelFriction  = gripToFriction(stats.gripLevel) * (weather?.gripModifier ?: 1f)
-
-    // Parametry biegów: index 0 to neutralny (nieużywany), 1-5 to biegi w grze
-    private val gearSpeedMultipliers = floatArrayOf(0f, 0.35f, 0.55f, 0.75f, 0.90f, 1.0f)
-    private val gearTorqueMultipliers = floatArrayOf(0f, 1.5f, 1.0f, 0.7f, 0.5f, 0.35f)
-    private val gearFuelMultipliers = floatArrayOf(0f, 2.0f, 1.5f, 1.2f, 1.0f, 0.8f) // Mniejsze spalanie wejdzie dla wyższych biegów
+    val fuelCapacity   = GamePhysicsConfig.fuelLevelToCapacity(stats.fuelLevel)
+    val maxTorque      = GamePhysicsConfig.engineToTorque(stats.engineLevel)
+    val maxSpeedLimit  = GamePhysicsConfig.engineToMaxSpeed(stats.engineLevel)
+    val wheelFriction  = GamePhysicsConfig.gripToFriction(stats.gripLevel) * (weather?.gripModifier ?: 1f)
 
     private val random = java.util.Random(42)
 
@@ -155,16 +145,19 @@ class GameEngine(
         if (!terrainLayers.isNullOrEmpty()) {
             var yDelta = 0f
             for (layer in terrainLayers) {
+                val layerGrowth = layer.growth ?: 0f
+                val currentAmplitude = layer.amplitude * (1f + x * layerGrowth)
                 if (layer.type == "sin") {
-                    yDelta += sin(x * layer.frequency) * layer.amplitude
+                    yDelta += sin(x * layer.frequency) * currentAmplitude
                 } else if (layer.type == "cos") {
-                    yDelta += cos(x * layer.frequency) * layer.amplitude
+                    yDelta += cos(x * layer.frequency) * currentAmplitude
                 }
             }
             return baseTerrainY + yDelta
         }
 
         // Fallback jeśli brakuje konfiguracji JSON
+        val growthFactor = 1f + x * 0.0015f
         return baseTerrainY + when (mapType) {
 
             MapType.SINUSOIDA -> {
@@ -174,30 +167,30 @@ class GameEngine(
             }
 
             MapType.PRAIRIE -> {
-                // Gładkie pagórki, usunięty random
-                sin(x * 0.08f) * 1.5f +
-                sin(x * 0.20f) * 0.8f +
-                sin(x * 0.50f) * 0.2f
+                // Gładkie pagórki
+                (sin(x * 0.08f) * 0.5f +
+                sin(x * 0.20f) * 0.2f +
+                sin(x * 0.50f) * 0.1f) * growthFactor
             }
 
             MapType.MOUNTAINS -> {
                 // Strome, lecz gładkie góry
-                sin(x * 0.06f) * 4.5f +
-                sin(x * 0.15f) * 2.0f +
-                sin(x * 0.40f) * 1.0f
+                (sin(x * 0.06f) * 1.5f +
+                sin(x * 0.15f) * 0.5f +
+                sin(x * 0.40f) * 0.2f) * growthFactor
             }
 
             MapType.ARCTIC -> {
                 // Długie fale, zero schodków
-                sin(x * 0.10f) * 2.0f +
-                sin(x * 0.25f) * 1.2f
+                (sin(x * 0.10f) * 0.8f +
+                sin(x * 0.25f) * 0.4f) * growthFactor
             }
 
             MapType.JUNGLE -> {
                 // Gęste fale i nierówności (gładkie)
-                sin(x * 0.12f) * 2.8f +
-                sin(x * 0.30f) * 1.5f +
-                cos(x * 0.50f) * 0.8f
+                (sin(x * 0.12f) * 1.0f +
+                sin(x * 0.30f) * 0.5f +
+                cos(x * 0.50f) * 0.2f) * growthFactor
             }
         }
     }
@@ -255,15 +248,15 @@ class GameEngine(
 
         val chassisFixture = FixtureDef().apply {
             shape = chassisShape
-            density = 2.5f     // Zwiększamy ciężar żeby mocniej dociskało
-            friction = 0.3f
-            restitution = 0.1f
+            density = GamePhysicsConfig.CHASSIS_DENSITY
+            friction = GamePhysicsConfig.CHASSIS_FRICTION
+            restitution = GamePhysicsConfig.CHASSIS_RESTITUTION
         }
-        chassisDef.angularDamping = 3.0f // Znacznie większy opór angularny zapobiega ciągłym gwałtownym obrotom
+        chassisDef.angularDamping = GamePhysicsConfig.CHASSIS_ANGULAR_DAMPING
         chassisBody.createFixture(chassisFixture)
 
         // --- Koła ---
-        val wheelRadius = 0.42f
+        val wheelRadius = GamePhysicsConfig.WHEEL_RADIUS
 
         frontWheelBody = createWheel(spawnX + 0.85f, spawnY - 0.35f, wheelRadius)
         rearWheelBody  = createWheel(spawnX - 0.85f, spawnY - 0.35f, wheelRadius)
@@ -276,8 +269,8 @@ class GameEngine(
             enableMotor = true
             maxMotorTorque = maxTorque
             motorSpeed = 0f
-            frequencyHz = 5f       // twardsze suspension
-            dampingRatio = 0.8f
+            frequencyHz = GamePhysicsConfig.SUSPENSION_FREQUENCY_HZ
+            dampingRatio = GamePhysicsConfig.SUSPENSION_DAMPING_RATIO
         }
         frontWheelJoint = world.createJoint(wjdFront) as WheelJoint
 
@@ -286,8 +279,8 @@ class GameEngine(
             enableMotor = true
             maxMotorTorque = maxTorque
             motorSpeed = 0f
-            frequencyHz = 5f
-            dampingRatio = 0.8f
+            frequencyHz = GamePhysicsConfig.SUSPENSION_FREQUENCY_HZ
+            dampingRatio = GamePhysicsConfig.SUSPENSION_DAMPING_RATIO
         }
         rearWheelJoint = world.createJoint(wjdRear) as WheelJoint
     }
@@ -304,8 +297,8 @@ class GameEngine(
 
         val fxDef = FixtureDef().apply {
             this.shape = shape
-            density = 1.2f     // cięższe koła
-            friction = wheelFriction * 1.5f // Lepsza przyczepność!
+            density = GamePhysicsConfig.WHEEL_DENSITY
+            friction = wheelFriction * GamePhysicsConfig.WHEEL_FRICTION_MULTIPLIER
             restitution = 0.1f
         }
         body.createFixture(fxDef)
@@ -337,28 +330,45 @@ class GameEngine(
         val dt = TICK_MS / 1000f
 
         // ── Aktualne parametry biegu ───────────────────────────────────────
-        val speedLimit = maxSpeedLimit * gearSpeedMultipliers[currentGear.coerceIn(1, 5)]
-        val torqueLimit = maxTorque * gearTorqueMultipliers[currentGear.coerceIn(1, 5)]
-        val fuelMultiplier = gearFuelMultipliers[currentGear.coerceIn(1, 5)]
+        val speedLimit = maxSpeedLimit * GamePhysicsConfig.GEAR_SPEED_MULTIPLIERS[currentGear.coerceIn(1, 5)]
+        val torqueLimit = maxTorque * GamePhysicsConfig.GEAR_TORQUE_MULTIPLIERS[currentGear.coerceIn(1, 5)]
+        val fuelMultiplier = GamePhysicsConfig.GEAR_FUEL_MULTIPLIERS[currentGear.coerceIn(1, 5)]
 
         // ── Kąt auta (znormalizowany w stopniach do zakresu [-180, 180]) ───
         var carAngleDeg = Math.toDegrees(chassisBody.angle.toDouble()).toFloat() % 360f
         if (carAngleDeg < -180f) carAngleDeg += 360f
         if (carAngleDeg > 180f) carAngleDeg -= 360f
 
+        // ── Zmienne kontaktu i lotu ───────────────────────────────────────
+        var frontTouching = false
+        var edgeFront = frontWheelBody.contactList
+        while (edgeFront != null) {
+            if (edgeFront.contact.isTouching) { frontTouching = true; break }
+            edgeFront = edgeFront.next
+        }
+
+        var rearTouching = false
+        var edgeRear = rearWheelBody.contactList
+        while (edgeRear != null) {
+            if (edgeRear.contact.isTouching) { rearTouching = true; break }
+            edgeRear = edgeRear.next
+        }
+        
+        val inAir = !frontTouching && !rearTouching
+
         // ── Silnik kół ─────────────────────────────────────────────────────
         val currentSpeedMs = chassisBody.linearVelocity.x
 
         when {
             gasPressed -> {
-                val targetOmega = -(speedLimit * 1.2f) / 0.42f
-                var torqueToApply = if (isNitroActive) torqueLimit * 2.0f else torqueLimit
+                val targetOmega = -(speedLimit * 1.2f) / GamePhysicsConfig.WHEEL_RADIUS
+                var torqueToApply = if (isNitroActive) torqueLimit * GamePhysicsConfig.NITRO_TORQUE_MULTIPLIER else torqueLimit
                 
-                // Zapobieganie wheelie (przód w górze) - zmniejszamy moment, gdy się mocno podnosi
-                // Kąt dodatni oznacza podnoszenie przodu (w Box2D kręci przeciwzegarowo)
                 if (carAngleDeg > 20f && carAngleDeg < 80f) {
-                    torqueToApply *= 0.05f // Drastycznie obcinamy przyspieszenie aby wyrównać nos auta
+                    torqueToApply *= GamePhysicsConfig.WHEELIE_PREVENTION_FACTOR
                 }
+
+                if (inAir) torqueToApply = 1f
 
                 frontWheelJoint.motorSpeed = targetOmega
                 frontWheelJoint.maxMotorTorque = torqueToApply
@@ -366,31 +376,34 @@ class GameEngine(
                 rearWheelJoint.maxMotorTorque  = torqueToApply
             }
             reversePressed -> {
-                val backOmega = (maxSpeedLimit * 0.8f) / 0.42f
+                val backOmega = (maxSpeedLimit * 0.8f) / GamePhysicsConfig.WHEEL_RADIUS
+                var torqueToApply = maxTorque * GamePhysicsConfig.BRAKING_TORQUE_FACTOR
+                
+                if (inAir) torqueToApply = 0f // Bezwzględny luz w locie
+                
                 frontWheelJoint.motorSpeed = backOmega
-                frontWheelJoint.maxMotorTorque = maxTorque * 1.2f
+                frontWheelJoint.maxMotorTorque = torqueToApply
                 rearWheelJoint.motorSpeed      = backOmega
-                rearWheelJoint.maxMotorTorque  = maxTorque * 1.2f
+                rearWheelJoint.maxMotorTorque  = torqueToApply
             }
             else -> {
                 // Silnik wyłączony – mały opór
+                var torqueToApply = maxTorque * GamePhysicsConfig.ENGINE_BRAKING_FACTOR
+                if (inAir) torqueToApply = 0f // W locie koła kompletnie luźne uwalniają maskę
+
                 frontWheelJoint.motorSpeed = 0f
-                frontWheelJoint.maxMotorTorque = maxTorque * 0.08f
+                frontWheelJoint.maxMotorTorque = torqueToApply
                 rearWheelJoint.motorSpeed      = 0f
-                rearWheelJoint.maxMotorTorque  = maxTorque * 0.08f
+                rearWheelJoint.maxMotorTorque  = torqueToApply
             }
         }
 
         // ── Krok symulacji ─────────────────────────────────────────────────
         world.step(dt, 8, 3)
 
-        // Wykrywamy lot
-        val inAir = abs(chassisBody.linearVelocity.y) > 1.5f ||
-                (frontWheelBody.linearVelocity.y < -1f && rearWheelBody.linearVelocity.y < -1f)
-
         // ── Kontrola w locie (flipy i backflipy) ───────────────────────────
         if (inAir) {
-            val airTorque = 30f // Dużo niższa wartość aby lepiej kontrolować auto w powietrzu
+            val airTorque = GamePhysicsConfig.AIR_ROTATION_TORQUE
             when {
                 gasPressed -> chassisBody.applyTorque(airTorque)     // Backflip
                 reversePressed -> chassisBody.applyTorque(-airTorque) // Frontflip
