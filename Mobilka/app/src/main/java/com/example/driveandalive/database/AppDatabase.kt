@@ -10,6 +10,7 @@ import com.example.driveandalive.database.entities.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlin.Float
 
 @Database(
     entities = [
@@ -20,7 +21,7 @@ import kotlinx.coroutines.launch
         MapRecord::class,
         PlayerProfile::class
     ],
-    version = 2,
+    version = 12,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -41,7 +42,7 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "drive_alive_v2.db"
+                    "drive_alive_v12.db"
                 )
                     .fallbackToDestructiveMigration() // reset przy zmianie wersji
                     .addCallback(DatabaseCallback(context))
@@ -55,7 +56,7 @@ abstract class AppDatabase : RoomDatabase() {
             synchronized(this) {
                 INSTANCE?.close()
                 INSTANCE = null
-                context.applicationContext.deleteDatabase("drive_alive_v2.db")
+                context.applicationContext.deleteDatabase("drive_alive_v12.db")
             }
         }
     }
@@ -74,15 +75,15 @@ abstract class AppDatabase : RoomDatabase() {
 
             val vehicles = listOf(
                 Vehicle(id = 1, name = "Terenówka", description = "Solidny SUV do każdego terenu",
-                    drawableName = "car_01_offroader", isUnlocked = true, unlockCost = 0),
+                    drawableName = "car_01_offroader", isUnlocked = true, unlockCost = 0, wheelDrawableName = "car_01_wheel", wheelVerticalBias = 0.22f),
                 Vehicle(id = 2, name = "Muscle Car", description = "Mocny silnik, słaby grip",
-                    drawableName = "car_02_muscle", isUnlocked = false, unlockCost = 300),
+                    drawableName = "car_02_muscle", isUnlocked = false, unlockCost = 300, wheelDrawableName = "car_02_wheel", wheelVerticalBias = 0.14f),
                 Vehicle(id = 3, name = "Buggy", description = "Lekki i zwinny – mistrz pagórków",
-                    drawableName = "car_03_buggy", isUnlocked = false, unlockCost = 600),
+                    drawableName = "car_03_buggy", isUnlocked = false, unlockCost = 600, wheelDrawableName = "car_03_wheel", wheelVerticalBias = 0.195f),
                 Vehicle(id = 4, name = "Monster Truck", description = "Potężny – przejedzie wszystko",
-                    drawableName = "car_04_monster", isUnlocked = false, unlockCost = 1200),
+                    drawableName = "car_04_monster", isUnlocked = false, unlockCost = 1200, wheelDrawableName = "car_04_wheel", wheelVerticalBias = 0.158f),
                 Vehicle(id = 5, name = "Quad ATV", description = "Małe, ale zwrotne",
-                    drawableName = "car_05_atv", isUnlocked = false, unlockCost = 900)
+                    drawableName = "car_05_atv", isUnlocked = false, unlockCost = 900, wheelDrawableName = "car_05_wheel", wheelVerticalBias = 0.35f)
             )
             database.vehicleDao().insertAll(vehicles)
 

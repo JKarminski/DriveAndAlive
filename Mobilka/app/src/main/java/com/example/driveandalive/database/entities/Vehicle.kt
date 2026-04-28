@@ -9,7 +9,11 @@ data class Vehicle(
     val id: Int = 0,
     val name: String,           
     val description: String,   
-    val drawableName: String,  
+    val drawableName: String,
+    val wheelDrawableName: String,
     val isUnlocked: Boolean = false,
-    val unlockCost: Int = 0    
+    val unlockCost: Int = 0,
+    val wheelLeftBias: Float = 0.75f,
+    val wheelRightBias: Float = 0.28f,
+    val wheelVerticalBias: Float = 0.33f
 )

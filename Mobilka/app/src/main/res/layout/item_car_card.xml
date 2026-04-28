@@ -13,16 +13,42 @@
 
         <ImageView
             android:id="@+id/iv_car"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:scaleType="fitCenter"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
             android:contentDescription="Grafika pojazdu"
             android:padding="24dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:scaleType="fitCenter"
             app:layout_constraintBottom_toTopOf="@id/tv_car_name"
-            app:layout_constraintHeight_percent="0.55" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_percent="0.55"
+            app:layout_constraintHorizontal_bias="0.497"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.23" />
+
+        <ImageView
+            android:id="@+id/ivWheelLeft"
+            android:layout_width="40dp"
+            android:layout_height="0dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_car_placeholder"
+            app:layout_constraintBottom_toBottomOf="@id/iv_car"
+            app:layout_constraintStart_toStartOf="@id/iv_car"
+            app:layout_constraintTop_toTopOf="@id/iv_car"
+            app:layout_constraintVertical_bias="1.0"
+            app:layout_constraintHorizontal_bias="0.2"/>
+
+        <ImageView
+            android:id="@+id/ivWheelRight"
+            android:layout_width="40dp"
+            android:layout_height="0dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_car_placeholder"
+            app:layout_constraintBottom_toBottomOf="@id/iv_car"
+            app:layout_constraintEnd_toEndOf="@id/iv_car"
+            app:layout_constraintTop_toTopOf="@id/iv_car"
+            app:layout_constraintVertical_bias="1"
+            app:layout_constraintHorizontal_bias="0.2"/>
 
         <FrameLayout
             android:id="@+id/overlay_locked"
