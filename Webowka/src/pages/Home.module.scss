@@ -1,0 +1,407 @@
+/* ── Hero ─────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.videoBg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.videoOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    160deg,
+    rgba(8,11,20,0.85) 0%,
+    rgba(8,11,20,0.5) 50%,
+    rgba(8,11,20,0.92) 100%
+  );
+  z-index: 1;
+}
+
+.videoPlaceholder {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at 60% 40%, #0d2a10 0%, #080b14 70%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Car animation ── */
+.carAnim {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.carEmoji {
+  font-size: clamp(6rem, 15vw, 14rem);
+  filter: drop-shadow(0 0 40px rgba(57,255,20,.4));
+  animation: carFloat 3s ease-in-out infinite;
+}
+
+@keyframes carFloat {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%       { transform: translateY(-18px) rotate(2deg); }
+}
+
+.speedLines {
+  position: absolute;
+  left: -60px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.speedLine {
+  display: block;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent));
+  animation: speed 1.4s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 0.12s);
+  width: calc(40px + var(--i) * 10px);
+  opacity: 0.7;
+}
+
+@keyframes speed {
+  0%   { transform: translateX(0); opacity: 0.7; }
+  100% { transform: translateX(-80px); opacity: 0; }
+}
+
+/* ── Hero content ── */
+.heroContent {
+  position: relative;
+  z-index: 2;
+  padding-top: 80px;
+  padding-bottom: 140px;
+}
+
+.heroTitle {
+  font-family: 'Outfit', sans-serif;
+  font-size: clamp(3rem, 8vw, 6.5rem);
+  font-weight: 900;
+  line-height: 1.05;
+  color: #fff;
+  margin: 16px 0 24px;
+  letter-spacing: -0.03em;
+}
+
+.heroSub {
+  font-size: 1.1rem;
+  color: var(--muted);
+  max-width: 520px;
+  line-height: 1.75;
+  margin-bottom: 36px;
+}
+
+.heroCta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 64px;
+}
+
+/* ── Stats bar ── */
+.statsBar {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+  padding: 24px 32px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(12px);
+  width: fit-content;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  strong {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--accent);
+    text-shadow: 0 0 16px rgba(57,255,20,.4);
+  }
+
+  span {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+}
+
+/* ── Scroll hint ── */
+.scrollHint {
+  position: absolute;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 2;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%       { transform: translateX(-50%) translateY(8px); }
+}
+
+.scrollLine {
+  display: block;
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(to bottom, var(--accent), transparent);
+}
+
+.scrollText {
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── Features ─────────────────────────────────────────────── */
+.featuresSection {
+  padding: 80px 0 60px;
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.3;
+  }
+}
+
+.featuresGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+
+  .featureTile {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    transition-delay: var(--delay);
+  }
+
+  &.revealed .featureTile {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.featureTile {
+  display: block;
+  padding: 32px 28px;
+  background: rgba(17,24,39,.6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(12px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top left, var(--col), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+
+  &:hover {
+    transform: translateY(-6px);
+    border-color: var(--col);
+    box-shadow: 0 16px 48px rgba(0,0,0,.5), 0 0 0 1px var(--col);
+
+    &::before { opacity: 0.08; }
+
+    .featureArrow { transform: translateX(4px); opacity: 1; }
+  }
+}
+
+.featureIcon {
+  font-size: 2.4rem;
+  display: block;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 0 8px var(--col));
+}
+
+.featureLabel {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.featureDesc {
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.featureArrow {
+  font-size: 1.2rem;
+  color: var(--col);
+  opacity: 0.5;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  display: block;
+}
+
+/* ── Posts feed ───────────────────────────────────────────── */
+.postsSection { padding: 60px 0 80px; }
+
+.postsHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 40px;
+}
+
+.postsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+
+  .postCard {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    transition-delay: var(--delay);
+  }
+
+  &.revealed .postCard {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.postCard {
+  padding: 28px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+.postEmoji {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 16px;
+}
+
+.postMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.postTag {
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.postDate {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.postTitle {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.postExcerpt {
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+
+.postReadMore {
+  font-size: 0.85rem;
+  color: var(--accent);
+  font-weight: 600;
+  transition: gap 0.2s;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  &:hover { opacity: 0.8; }
+}
+
+/* ── CTA Banner ───────────────────────────────────────────── */
+.ctaBanner {
+  padding: 80px 0;
+  background: linear-gradient(135deg, rgba(57,255,20,.04) 0%, rgba(0,212,255,.04) 100%);
+  border-top: 1px solid var(--border);
+}
+
+.ctaInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.ctaTitle {
+  font-family: 'Outfit', sans-serif;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.ctaSub { color: var(--muted); font-size: 1rem; }
+
+.ctaBtns { display: flex; gap: 14px; flex-wrap: wrap; }
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .featuresGrid { grid-template-columns: 1fr; }
+  .postsGrid    { grid-template-columns: 1fr; }
+  .statsBar     { gap: 24px; padding: 20px 24px; }
+  .ctaInner     { flex-direction: column; text-align: center; }
+  .ctaBtns      { justify-content: center; }
+}
