@@ -99,6 +99,26 @@
   flex-shrink: 0;
 }
 
+.themeToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(128,128,128,.1);
+  border: 1px solid var(--border);
+  font-size: 1.1rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(128,128,128,.2);
+    transform: scale(1.05);
+  }
+}
+
 .loginBtn { padding: 9px 22px; font-size: 0.88rem; }
 
 /* ── User menu ── */

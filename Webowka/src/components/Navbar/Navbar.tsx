@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { NavLink, Link, useLocation } from "react-router-dom";
 import styles from "./Navbar.module.scss";
+import { useTheme } from "../../context/ThemeContext";
 
 const NAV_ITEMS = [
   { to: "/leaderboard",  label: "Tabela wyników",  icon: "🏆" },
@@ -17,6 +18,19 @@ export default function Navbar(): JSX.Element {
   const [user, setUser]           = useState<{ name: string; avatar: string } | null>(null);
   const location = useLocation();
   const prevPath = useRef(location.pathname);
+  const { theme, setTheme } = useTheme();
+
+  const cycleTheme = () => {
+    if (theme === "dark") setTheme("formal");
+    else if (theme === "formal") setTheme("light");
+    else setTheme("dark");
+  };
+
+  const getThemeIcon = () => {
+    if (theme === "dark") return "🌙";
+    if (theme === "formal") return "👔";
+    return "☀️";
+  };
 
   // Close menu on route change
   useEffect(() => {
@@ -73,6 +87,9 @@ export default function Navbar(): JSX.Element {
 
         {/* Right side */}
         <div className={styles.right}>
+          <button className={styles.themeToggle} onClick={cycleTheme} title="Zmień motyw">
+            {getThemeIcon()}
+          </button>
           {user ? (
             <div className={styles.userMenu}>
               <Link to="/settings" className={styles.avatar}>

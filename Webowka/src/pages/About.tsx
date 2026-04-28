@@ -2,18 +2,20 @@ import React from "react";
 import styles from "./PageShared.module.scss";
 
 const TEAM = [
-  { name:"Jakub K.",     role:"Lead Developer / Game Engine",  emoji:"⚙️" },
-  { name:"TBA",          role:"Backend & API",                  emoji:"🌐" },
-  { name:"TBA",          role:"UI / UX Design",                 emoji:"🎨" },
-  { name:"TBA",          role:"Map Design & QA",                emoji:"🗺️" },
+  { name: "Jakub K.", role: "Lead Developer / Game Engine", emoji: "⚙️" },
+  { name: "TBA", role: "Backend & API", emoji: "🌐" },
+  { name: "TBA", role: "UI / UX Design", emoji: "🎨" },
+  { name: "TBA", role: "Map Design & QA", emoji: "🗺️" },
 ];
 
 const TIMELINE = [
-  { date:"Sty 2025", ev:"Początek projektu – prototyp silnika fizyki" },
-  { date:"Mar 2025", ev:"Pierwsza grywalana wersja alpha"              },
-  { date:"Cze 2025", ev:"Integracja systemu pogodowego"                },
-  { date:"Wrz 2025", ev:"Wdrożenie Map Creatora i rankingów"           },
-  { date:"Kwi 2026", ev:"Patch 1.4 – nowe trasy i turnieje"            },
+  { date: "Sty 2025", ev: "Początek projektu – prototyp silnika fizyki" },
+  { date: "Mar 2025", ev: "Pierwsza grywalana wersja alpha" },
+  { date: "Cze 2025", ev: "Integracja systemu pogodowego" },
+  { date: "Wrz 2025", ev: "Wdrożenie Map Creatora i rankingów" },
+  { date: "Kwi 2026", ev: "Patch 1.4 – nowe trasy i turnieje" },
+
+
 ];
 
 export default function About(): JSX.Element {
@@ -42,14 +44,14 @@ export default function About(): JSX.Element {
         </div>
 
         {/* Tech stack */}
-        <div className={styles.techSection}>
+        <div className={`${styles.techSection} reveal-element`}>
           <h2 className={styles.aboutSectionTitle}>🛠️ Technologie</h2>
           <div className={styles.techGrid}>
             {[
-              { icon:"📱", name:"Kotlin / Jetpack Compose", desc:"Natywna aplikacja Android"     },
-              { icon:"⚛️",  name:"React + Vite",            desc:"Strona webowa"                  },
-              { icon:"☁️",  name:"OpenWeatherMap API",       desc:"Dynamiczna pogoda w grze"       },
-              { icon:"🗄️",  name:"REST API",                 desc:"Rankingi i profile graczy"      },
+              { icon: "📱", name: "Kotlin / Jetpack Compose", desc: "Natywna aplikacja Android" },
+              { icon: "⚛️", name: "React + Vite", desc: "Strona webowa" },
+              { icon: "☁️", name: "OpenWeatherMap API", desc: "Dynamiczna pogoda w grze" },
+              { icon: "🗄️", name: "REST API", desc: "Rankingi i profile graczy" },
             ].map((t) => (
               <div key={t.name} className={`${styles.techCard} glass-card`}>
                 <span className={styles.techIcon}>{t.icon}</span>
@@ -61,7 +63,7 @@ export default function About(): JSX.Element {
         </div>
 
         {/* Team */}
-        <div className={styles.teamSection}>
+        <div className={`${styles.teamSection} reveal-element delay-1`}>
           <h2 className={styles.aboutSectionTitle}>👥 Zespół</h2>
           <div className={styles.teamGrid}>
             {TEAM.map((m) => (
@@ -75,7 +77,7 @@ export default function About(): JSX.Element {
         </div>
 
         {/* Timeline */}
-        <div className={styles.timelineSection}>
+        <div className={`${styles.timelineSection} reveal-element delay-2`}>
           <h2 className={styles.aboutSectionTitle}>📅 Historia projektu</h2>
           <div className={styles.timeline}>
             {TIMELINE.map((t, i) => (
