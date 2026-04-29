@@ -116,6 +116,10 @@ class GameActivity : AppCompatActivity() {
                         }
                     }
                     binding.gameView.engine = gameEngine
+
+                    binding.gameView.setPtm(GameEngine.PTM)
+                    binding.gameView.loadVehicle(vehicleId)
+
                     setupControls()
                     startGameLoop()
                 }

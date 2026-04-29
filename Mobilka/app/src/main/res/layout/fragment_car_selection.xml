@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/bg_dark">
 
-    <!-- Tytuł + monety -->
+    <!-- Tytuł + monety + przycisk rankingu -->
     <LinearLayout
         android:id="@+id/header"
         android:layout_width="0dp"
@@ -16,6 +16,7 @@
         android:paddingEnd="24dp"
         android:paddingTop="20dp"
         android:paddingBottom="24dp"
+        android:gravity="center_vertical"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -29,7 +30,23 @@
             android:textColor="@color/text_primary"
             android:textSize="26sp"
             android:textStyle="bold"
-            android:fontFamily="sans-serif-condensed"/>
+            android:fontFamily="sans-serif-condensed" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_ranking"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🏆 RANKING"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:paddingStart="12dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="6dp"
+            android:textColor="@color/text_primary"
+            app:backgroundTint="@color/stat_grip"
+            app:cornerRadius="20dp"
+            android:layout_marginEnd="16dp" />
 
         <TextView
             android:id="@+id/tv_coins"
@@ -38,7 +55,8 @@
             android:text="💰 0"
             android:textColor="@color/coin_color"
             android:textSize="20sp"
-            android:textStyle="bold"/>
+            android:textStyle="bold" />
+
     </LinearLayout>
 
     <!-- ViewPager -->
@@ -46,16 +64,17 @@
         android:id="@+id/view_pager_cars"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/header"
-        app:layout_constraintBottom_toTopOf="@id/tv_page_indicator"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginEnd="0dp"
+        android:paddingStart="240dp"
+        android:paddingEnd="240dp"
         android:clipChildren="false"
         android:clipToPadding="false"
-        android:overScrollMode="never" />
+        android:overScrollMode="never"
+        app:layout_constraintBottom_toTopOf="@id/tv_page_indicator"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/header" />
 
     <!-- Page indicator -->
     <TextView
@@ -68,6 +87,6 @@
         android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

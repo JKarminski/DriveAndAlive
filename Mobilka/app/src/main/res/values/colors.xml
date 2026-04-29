@@ -40,4 +40,7 @@
     <color name="colorBackground">#0D0D0F</color>
     <color name="colorOnBackground">#FFFFFF</color>
     <color name="colorError">#FF2D55</color>
+
+    <color name="md_theme_light_primary">#006A6A</color>
+    <color name="md_theme_light_accent">#FF8C42</color>
 </resources>

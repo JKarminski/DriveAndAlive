@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="@color/bg_dark">
 
-    <!-- Tytuł + monety -->
     <LinearLayout
         android:id="@+id/header"
         android:layout_width="0dp"
@@ -16,11 +15,11 @@
         android:paddingEnd="24dp"
         android:paddingTop="20dp"
         android:paddingBottom="24dp"
+        android:gravity="center_vertical"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Tytuł -->
         <TextView
             android:id="@+id/tv_title"
             android:layout_width="0dp"
@@ -30,10 +29,24 @@
             android:textColor="@color/text_primary"
             android:textSize="26sp"
             android:textStyle="bold"
-            android:fontFamily="sans-serif-condensed"
-            android:layout_gravity="center_vertical"/>
+            android:fontFamily="sans-serif-condensed" />
 
-        <!-- Pogoda (po lewej od monet) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_ranking"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🏆 RANKING"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:paddingStart="12dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="6dp"
+            android:textColor="@color/text_primary"
+            app:backgroundTint="@color/stat_grip"
+            app:cornerRadius="20dp"
+            android:layout_marginEnd="16dp" />
+
         <TextView
             android:id="@+id/tv_weather"
             android:layout_width="wrap_content"
@@ -44,10 +57,8 @@
             android:paddingHorizontal="10dp"
             android:paddingVertical="6dp"
             android:visibility="gone"
-            android:layout_marginEnd="16dp"
-            android:layout_gravity="center_vertical"/>
+            android:layout_marginEnd="16dp" />
 
-        <!-- Monety (najbardziej po prawej) -->
         <TextView
             android:id="@+id/tv_coins"
             android:layout_width="wrap_content"
@@ -55,29 +66,26 @@
             android:text="💰 0"
             android:textColor="@color/coin_color"
             android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_gravity="center_vertical"/>
+            android:textStyle="bold" />
+
     </LinearLayout>
 
-
-    <!-- ViewPager (pomniejszony) -->
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/view_pager_maps"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginEnd="0dp"
+        android:paddingStart="240dp"
+        android:paddingEnd="240dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:overScrollMode="never"
         app:layout_constraintTop_toBottomOf="@id/header"
         app:layout_constraintBottom_toTopOf="@id/tv_page_indicator"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginTop="12dp"
-        android:clipChildren="false"
-        android:clipToPadding="false"
-        android:overScrollMode="never" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
-
-    <!-- Page indicator -->
     <TextView
         android:id="@+id/tv_page_indicator"
         android:layout_width="wrap_content"
@@ -88,6 +96,6 @@
         android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

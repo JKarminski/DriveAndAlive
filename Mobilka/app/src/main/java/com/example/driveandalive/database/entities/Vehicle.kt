@@ -15,5 +15,6 @@ data class Vehicle(
     val unlockCost: Int = 0,
     val wheelLeftBias: Float = 0.75f,
     val wheelRightBias: Float = 0.28f,
-    val wheelVerticalBias: Float = 0.33f
+    val wheelVerticalBias: Float = 0.33f,
+    val carBodyVerticalOffset: Float = 0f
 )

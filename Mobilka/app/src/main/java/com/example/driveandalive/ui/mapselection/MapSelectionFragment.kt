@@ -4,13 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewGroup.MarginLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
-import androidx.viewpager2.widget.CompositePageTransformer
-import androidx.viewpager2.widget.MarginPageTransformer
 import androidx.viewpager2.widget.ViewPager2
 import com.example.driveandalive.R
 import com.example.driveandalive.databinding.FragmentMapSelectionBinding
@@ -26,7 +23,11 @@ class MapSelectionFragment : Fragment() {
     private val viewModel: MapSelectionViewModel by viewModels()
     private lateinit var adapter: MapPagerAdapter
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         _binding = FragmentMapSelectionBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -52,63 +53,46 @@ class MapSelectionFragment : Fragment() {
         }
 
         binding.viewPagerMaps.adapter = adapter
-        binding.viewPagerMaps.offscreenPageLimit = 3
+        binding.viewPagerMaps.offscreenPageLimit = 5   // większy dla płynności
 
-        // Disable clipping so neighbors are visible
+        // Clipping – aby sąsiednie karty były widoczne
         val recyclerView = binding.viewPagerMaps.getChildAt(0) as? RecyclerView
         recyclerView?.let {
             it.clipToPadding = false
             it.clipChildren = false
             (it.parent as? ViewGroup)?.clipChildren = false
         }
-        binding.viewPagerMaps.clipChildren = false
         binding.viewPagerMaps.clipToPadding = false
+        binding.viewPagerMaps.clipChildren = false
 
-        // Composite transformer (margin + scale + alpha + Z-index)
-        val transformer = CompositePageTransformer()
-        val margin = resources.getDimensionPixelSize(R.dimen.viewpager_page_margin)
-        transformer.addTransformer(MarginPageTransformer(margin))
-        transformer.addTransformer { page, position ->
+        // Prosty PageTransformer (skala + alpha) – bez CompositePageTransformer
+        binding.viewPagerMaps.setPageTransformer { page, position ->
             val r = 1 - abs(position)
             val scale = 0.85f + 0.15f * r
             page.scaleX = scale
             page.scaleY = scale
             page.alpha = 0.6f + 0.4f * r
-
-            val baseZ = resources.getDimension(R.dimen.viewpager_base_elevation)
-            val extraZ = resources.getDimension(R.dimen.viewpager_extra_elevation)
-            page.translationZ = baseZ + extraZ * r
-
-            val lp = page.layoutParams
-            if (lp is MarginLayoutParams) {
-                val extraMargin = (margin * 0.5f * (1 - r)).toInt()
-                lp.marginStart = extraMargin
-                lp.marginEnd = extraMargin
-                page.layoutParams = lp
-            }
         }
 
-        binding.viewPagerMaps.setPageTransformer(transformer)
-
-        // Load maps
+        // Obserwacja listy map
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.maps.collectLatest { maps ->
                 adapter.submitList(maps)
             }
         }
 
-        // Load profile + select current map
+        // Obserwacja profilu (monety i wybrana mapa) – używamy Flow, nie .value
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.playerProfile.collectLatest { profile ->
-                profile?.let {
-                    binding.tvCoins.text = "💰 ${it.coins}"
-                    val idx = adapter.currentList.indexOfFirst { m -> m.id == it.selectedMapId }
-                    if (idx >= 0) binding.viewPagerMaps.setCurrentItem(idx, false)
+                binding.tvCoins.text = "💰 ${profile?.coins}"
+                val idx = adapter.currentList.indexOfFirst { it.id == profile?.selectedMapId }
+                if (idx >= 0) {
+                    binding.viewPagerMaps.setCurrentItem(idx, false)
                 }
             }
         }
 
-        // Weather updates
+        // Obserwacja pogody (LiveData)
         viewModel.currentWeather.observe(viewLifecycleOwner) { weather ->
             if (weather != null) {
                 binding.tvWeather.visibility = View.VISIBLE
@@ -118,12 +102,11 @@ class MapSelectionFragment : Fragment() {
             }
         }
 
-        // Page indicator + auto-select unlocked map
+        // Callback – aktualizacja wskaźnika i wybór mapy
         binding.viewPagerMaps.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 val size = adapter.currentList.size
                 binding.tvPageIndicator.text = "${position + 1} / $size"
-
                 val map = adapter.currentList.getOrNull(position)
                 if (map != null) {
                     viewModel.loadWeather(map)

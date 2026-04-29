@@ -4,6 +4,13 @@ import android.content.Context
 import android.graphics.*
 import android.view.View
 import kotlin.math.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import android.graphics.BitmapFactory
+import com.example.driveandalive.database.AppDatabase
+import kotlinx.coroutines.GlobalScope
 
 /**
  * Widok gry – renderuje świat Box2D na Canvas.
@@ -19,6 +26,16 @@ class GameView @JvmOverloads constructor(
     attrs: android.util.AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
+
+
+    // Bitmapy pojazdu
+    private var carBitmap: Bitmap? = null
+    private var wheelBitmap: Bitmap? = null
+
+    // Wymiary w pikselach (ustawimy po załadowaniu bitmap)
+    private var carHalfWidth = 0f
+    private var carHalfHeight = 0f
+    private var wheelRadius = 0f
 
     var engine: GameEngine? = null
         set(value) {
@@ -251,106 +268,120 @@ class GameView @JvmOverloads constructor(
     // ═══════════════════════════════════════════════════════════════════════
     //  Auto
     // ═══════════════════════════════════════════════════════════════════════
-    private fun drawCar(canvas: Canvas, eng: GameEngine, camX: Float, camY: Float) {
-        // Koła
-        drawWheel(canvas, eng.rearWheelBody.position.x,
-            eng.rearWheelBody.position.y, camX, camY,
-            eng.rearWheelBody.angle.toFloat())
-        drawWheel(canvas, eng.frontWheelBody.position.x,
-            eng.frontWheelBody.position.y, camX, camY,
-            eng.frontWheelBody.angle.toFloat())
 
-        // Nadwozie
+    private var ptms: Float = 20f
+    private lateinit var loadVehicleScope: CoroutineScope
+
+    fun setPtm(ptm: Float) {
+        this.ptms = ptm
+    }
+
+    private var carBodyVerticalOffsetPx = 0f
+
+    fun loadVehicle(vehicleId: Int) {
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                val db = AppDatabase.getDatabase(context)
+                val vehicle = db.vehicleDao().getVehicleById(vehicleId) ?: return@launch
+
+                val carResId = context.resources.getIdentifier(vehicle.drawableName, "drawable", context.packageName)
+                val wheelResId = context.resources.getIdentifier(vehicle.wheelDrawableName, "drawable", context.packageName)
+
+                if (carResId == 0 || wheelResId == 0) {
+                    android.util.Log.e("GameView", "Missing drawables")
+                    return@launch
+                }
+
+                // Wczytywanie bitmap
+                val carBmpOrig = BitmapFactory.decodeResource(context.resources, carResId)
+                val wheelBmpOrig = BitmapFactory.decodeResource(context.resources, wheelResId)
+
+                if (carBmpOrig == null || wheelBmpOrig == null) {
+                    android.util.Log.e("GameView", "Failed to decode bitmaps")
+                    return@launch
+                }
+
+
+                // Nadwozie
+                val targetWidthM = 2.7f
+                val targetWidthPx = (targetWidthM * ptm).toInt()
+
+                val aspect = carBmpOrig.height.toFloat() / carBmpOrig.width.toFloat()
+                val targetHeightPx = (targetWidthPx * aspect).toInt()
+                val scaledCar = Bitmap.createScaledBitmap(carBmpOrig, targetWidthPx, targetHeightPx, true)
+
+                // Koła
+                val targetWheelSize = (0.84f * ptm).toInt()
+                val scaledWheel = Bitmap.createScaledBitmap(wheelBmpOrig, targetWheelSize, targetWheelSize, true)
+
+                val offsetPx = vehicle.carBodyVerticalOffset * ptm
+
+                // Przejdź na główny wątek, aby zaktualizować pola i przerysować
+                withContext(Dispatchers.Main) {
+                    carBitmap = scaledCar
+                    wheelBitmap = scaledWheel
+                    carHalfWidth = targetWidthPx / 2f
+                    carHalfHeight = targetHeightPx / 2f
+                    wheelRadius = targetWheelSize / 2f
+                    carBodyVerticalOffsetPx = offsetPx
+                    invalidate()
+                    android.util.Log.d("GameView", "Vehicle loaded and scaled")
+
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("GameView", "Error in loadVehicle", e)
+            }
+        }
+    }
+
+    private fun drawCar(canvas: Canvas, eng: GameEngine, camX: Float, camY: Float) {
+        // Najpierw nadwozie
         val cx = worldToScreenX(eng.chassisBody.position.x, camX)
         val cy = worldToScreenY(eng.chassisBody.position.y, camY)
-        val carAngle = -eng.chassisBody.angle   // Box2D→Canvas (odwrócone Y)
-
+        val carAngle = -eng.chassisBody.angle
         canvas.save()
         canvas.translate(cx, cy)
         canvas.rotate(Math.toDegrees(carAngle.toDouble()).toFloat())
 
-        // Wybierz kolor nadwozia wg pojazdu  (potem można dodać per-vehicle)
-        carBodyPaint.color = Color.parseColor("#E85D04")
-        carRoofPaint.color = Color.parseColor("#C04400")
-
-        // ── Nadwozie (w Box2D 1.1 m × 0.35 m → w pikselach × PTM) ────────
-        val hw = 1.1f * ptm    // połowa szerokości
-        val hh = 0.35f * ptm   // połowa wysokości
-
-        // Podwozie
-        canvas.drawRoundRect(RectF(-hw, -hh, hw, hh), 12f, 12f, carBodyPaint)
-
-        // Zderzaki
-        carDetailPaint.color = Color.parseColor("#333333")
-        canvas.drawRoundRect(RectF(hw - 8f, -hh + 8f, hw + 6f, hh - 8f), 4f, 4f, carDetailPaint)
-        canvas.drawRoundRect(RectF(-hw - 6f, -hh + 8f, -hw + 8f, hh - 8f), 4f, 4f, carDetailPaint)
-
-        // Dach (kabina)
-        val roofL = -hw * 0.45f
-        val roofR =  hw * 0.55f
-        val roofTop = -hh - ptm * 0.55f
-        val roofBot = -hh
-
-        canvas.drawRoundRect(RectF(roofL, roofTop, roofR, roofBot), 10f, 10f, carRoofPaint)
-
-        // Szyba przednia
-        canvas.drawRoundRect(RectF(roofL + 10f, roofTop + 8f, roofR - 6f, roofBot - 4f), 6f, 6f, carWindowPaint)
-
-        // Nitro flame
-        if (eng.isNitroActive) {
-            val nPts = 6
-            for (i in 0 until nPts) {
-                val frac = i.toFloat() / nPts
-                nitroPaint.color = lerpColor("#FF6B00", "#FFDD00", frac)
-                nitroPaint.alpha = (255 * (1f - frac)).toInt()
-                canvas.drawOval(
-                    RectF(-hw - 16f - i * 12f, -8f + i * 2f, -hw - 4f - i * 12f, 8f - i * 2f),
-                    nitroPaint
-                )
-            }
+        if (carBitmap != null) {
+            canvas.drawBitmap(carBitmap!!, -carHalfWidth, -carHalfHeight + carBodyVerticalOffsetPx, null)
+        } else {
+            // rysowanie zastępcze (prostokąty)
+            canvas.drawRoundRect(RectF(-1.1f * ptm, -0.35f * ptm + carBodyVerticalOffsetPx, 1.1f * ptm, 0.35f * ptm + carBodyVerticalOffsetPx),
+                12f, 12f, carBodyPaint
+            )
         }
-
         canvas.restore()
+
+        // Następnie koła (bez zmian)
+        drawWheel(canvas, eng.rearWheelBody.position.x, eng.rearWheelBody.position.y, camX, camY, eng.rearWheelBody.angle.toFloat())
+        drawWheel(canvas, eng.frontWheelBody.position.x, eng.frontWheelBody.position.y, camX, camY, eng.frontWheelBody.angle.toFloat())
     }
 
     private fun drawWheel(
         canvas: Canvas,
         worldX: Float, worldY: Float,
         camX: Float, camY: Float,
-        angle: Float
+        angle: Float,
+        isRear: Boolean = false   // dodany parametr z domyślną wartością
     ) {
         val sx = worldToScreenX(worldX, camX)
         val sy = worldToScreenY(worldY, camY)
-        val r = 0.42f * ptm  // promień koła w pikselach
 
         canvas.save()
         canvas.translate(sx, sy)
         canvas.rotate(-Math.toDegrees(angle.toDouble()).toFloat())
 
-        // Opona
-        canvas.drawCircle(0f, 0f, r, wheelPaint)
-
-        // Bieżnik – łuki
-        for (i in 0..7) {
-            val a = (i * 45f)
-            canvas.drawArc(RectF(-r, -r, r, r), a, 20f, false, tireTreadPaint)
+        if (wheelBitmap != null) {
+            // Rysujemy bitmapę koła – środek koła w (0,0)
+            val r = wheelRadius
+            canvas.drawBitmap(wheelBitmap!!, -r, -r, null)
+        } else {
+            // Rysowanie zastępcze (koło geometryczne) – jak było oryginalnie
+            val r = 0.42f * ptm
+            canvas.drawCircle(0f, 0f, r, wheelPaint)
+            // ... reszta rysowania felgi, szprych itd. (możesz skopiować ze starego kodu)
         }
-
-        // Felga
-        canvas.drawCircle(0f, 0f, r * 0.58f, rimPaint)
-
-        // Szprychy
-        for (i in 0..4) {
-            val a = Math.toRadians(i * 72.0)
-            canvas.drawLine(
-                (r * 0.18f * cos(a)).toFloat(), (r * 0.18f * sin(a)).toFloat(),
-                (r * 0.55f * cos(a)).toFloat(), (r * 0.55f * sin(a)).toFloat(),
-                spokePaint
-            )
-        }
-
-        // Piasta
-        canvas.drawCircle(0f, 0f, r * 0.15f, wheelPaint)
 
         canvas.restore()
     }
