@@ -14,7 +14,7 @@ interface I18nContextType {
   toggleLang: () => void;
 }
 
-const I18nContext = createContext<I18nContextType | null>(null);
+export const I18nContext = createContext<I18nContextType | null>(null);
 
 export const useI18n = () => {
   const ctx = useContext(I18nContext);

@@ -1,0 +1,30 @@
+# Zależności - to MUSI być ignorowane
+node_modules/
+
+# Pliki środowiskowe (np. z hasłami do bazy danych)
+.env
+.env.local
+.env.*.local
+
+# Folder produkcyjny po zbudowaniu aplikacji (frontend)
+dist/
+dist-ssr/
+
+# Logi
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Pliki konfiguracyjne systemów i edytorów
+.DS_Store
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Testy (coverage)
+coverage/

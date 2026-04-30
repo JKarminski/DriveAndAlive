@@ -1,0 +1,15 @@
+# Zależności backendowe
+node_modules/
+
+# Pliki środowiskowe z sekretami (API keys, hasła do DB)
+# UWAGA: plik .env.example powinen BYĆ na githubie, ale samo .env NIE!
+.env
+.env.test
+
+# Logi i pliki systemowe
+npm-debug.log
+.DS_Store
+
+# Raporty z testów
+coverage/
+.nyc_output/
