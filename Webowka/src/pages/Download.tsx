@@ -16,7 +16,7 @@ export default function Download(): JSX.Element {
       size: "87 MB",
     },
     {
-      icon: "",
+      icon: "🍎",
       name: "iOS",
       store: "App Store",
       badge: "https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg",
@@ -92,7 +92,7 @@ export default function Download(): JSX.Element {
               </ul>
             </div>
             <div>
-              <strong> iOS</strong>
+              <strong>🍎 iOS</strong>
               <ul>
                 <li>iOS 14+</li>
                 <li>iPhone 8+</li>

@@ -5,13 +5,13 @@ import { useApi } from "../hooks/useApi";
 import { api } from "../services/api";
 import type { LeaderboardEntry } from "../services/api";
 
+// Slugi tras zgodne z Twoim JSON-em
 const TRACK_SLUGS = [
   "all",
-  "alpine-crossing",
-  "gravel-sprint",
-  "night-highway",
-  "mountain-loop",
-  "desert-slalom",
+  "prairie",
+  "mountains",
+  "arctic",
+  "jungle",
 ];
 
 const medal = (r: number) => {
@@ -24,17 +24,17 @@ const medal = (r: number) => {
 export default function Leaderboard(): JSX.Element {
   const { t } = useI18n();
 
+  // Nazwy tras zgodne z JSON-em
   const TRACK_LABELS: Record<string, string> = {
-    "all":             t("leaderboard.trackAll"),
-    "alpine-crossing": t("leaderboard.trackAlpine"),
-    "gravel-sprint":   t("leaderboard.trackGravel"),
-    "night-highway":   t("leaderboard.trackNight"),
-    "mountain-loop":   t("leaderboard.trackMountain"),
-    "desert-slalom":   t("leaderboard.trackDesert"),
+    "all":       t("leaderboard.trackAll"),
+    "prairie":   t("leaderboard.trackPrairie"),
+    "mountains": t("leaderboard.trackMountains"),
+    "arctic":    t("leaderboard.trackArctic"),
+    "jungle":    t("leaderboard.trackJungle"),
   };
 
   const [activeTrack, setActiveTrack] = useState("all");
-  const [page, setPage]               = useState(1);
+  const [page, setPage] = useState(1);
   const LIMIT = 20;
 
   const { data, loading, error } = useApi(
@@ -52,6 +52,7 @@ export default function Leaderboard(): JSX.Element {
   return (
     <div className={styles.page}>
       <div className="container">
+
         {/* Header */}
         <div className={`${styles.pageHeader} fade-up`}>
           <span className="section-label">🏆 {t("leaderboard.label")}</span>
@@ -68,7 +69,7 @@ export default function Leaderboard(): JSX.Element {
               className={`${styles.chip} ${activeTrack === slug ? styles.chipActive : ""}`}
               onClick={() => handleTrackChange(slug)}
             >
-              {TRACK_LABELS[slug] ?? slug}
+              {TRACK_LABELS[slug]}
             </button>
           ))}
         </div>
@@ -80,11 +81,12 @@ export default function Leaderboard(): JSX.Element {
             {t("leaderboard.loading") || "Ładowanie..."}
           </div>
         )}
+
         {error && (
           <div className={styles.weatherError}>
             ⚠️ {error}
             <p style={{ fontSize: "0.8rem", marginTop: 8, color: "var(--muted)" }}>
-              {t("leaderboard.apiError") || "Sprawdź czy backend jest uruchomiony (npm run dev w /backend)."}
+              {t("leaderboard.apiError") || "Sprawdź czy backend jest uruchomiony."}
             </p>
           </div>
         )}
@@ -137,9 +139,11 @@ export default function Leaderboard(): JSX.Element {
             >
               ← {t("leaderboard.prev") || "Poprzednia"}
             </button>
+
             <span className={styles.pageInfo}>
               {page} / {data.totalPages}
             </span>
+
             <button
               id="leaderboard-next"
               className={`btn btn-outline ${styles.pageBtn}`}
@@ -150,6 +154,7 @@ export default function Leaderboard(): JSX.Element {
             </button>
           </div>
         )}
+
       </div>
     </div>
   );

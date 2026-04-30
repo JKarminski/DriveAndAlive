@@ -18,11 +18,11 @@ export default function Cookies(): JSX.Element {
         <div className={`${legalStyles.legalCard} glass-card fade-up`}>
           <span className={legalStyles.dateMeta}>{t("cookies.lastUpdate")}</span>
 
+          {/* 1. Czym są cookies */}
           <h2>1. {t("cookies.h1")}</h2>
-          <p>
-            {t("cookies.p1")}
-          </p>
+          <p>{t("cookies.p1")}</p>
 
+          {/* 2. Rodzaje cookies */}
           <h2>2. {t("cookies.h2")}</h2>
           <p>{t("cookies.p2")}</p>
           <ul>
@@ -34,15 +34,39 @@ export default function Cookies(): JSX.Element {
             </li>
           </ul>
 
+          {/* 3. Cookies własne i zewnętrzne */}
           <h2>3. {t("cookies.h3")}</h2>
-          <p>
-            {t("cookies.p3")}
-          </p>
+          <p>{t("cookies.p3")}</p>
 
+          {/* 4. Czas przechowywania */}
           <h2>4. {t("cookies.h4")}</h2>
-          <p>
-            {t("cookies.p4")}
-          </p>
+          <ul>
+            <li>{t("cookies.li4_1")}</li>
+            <li>{t("cookies.li4_2")}</li>
+          </ul>
+
+          {/* 5. Local Storage */}
+          <h2>5. {t("cookies.h5")}</h2>
+          <p>{t("cookies.p5")}</p>
+          <ul>
+            <li>{t("cookies.li5_1")}</li>
+            <li>{t("cookies.li5_2")}</li>
+            <li>{t("cookies.li5_3")}</li>
+          </ul>
+
+          {/* 6. Zarządzanie cookies */}
+          <h2>6. {t("cookies.h6")}</h2>
+          <p>{t("cookies.p6")}</p>
+          <ul>
+            <li>{t("cookies.li6_1")}</li>
+            <li>{t("cookies.li6_2")}</li>
+            <li>{t("cookies.li6_3")}</li>
+          </ul>
+          <p>{t("cookies.p6_2")}</p>
+
+          {/* 7. Informacje o przetwarzaniu */}
+          <h2>7. {t("cookies.h7")}</h2>
+          <p>{t("cookies.p7")}</p>
         </div>
       </div>
     </div>
