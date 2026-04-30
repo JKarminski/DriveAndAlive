@@ -12,6 +12,7 @@ Projekt **DriveAndAlive** został zrealizowany przez 3-osobowy zespół. Poniżs
 | | Autoryzacja i logowanie w grze (Firebase). | **Kacper Kirszewski** |
 | | Elementy wizualne w grze. | **Kacper Liszkowski** |
 | | Dodanie baz danych odpowiedzialnych za tablice rekordów (Scoreboards). | **Kacper Kirszewski** |
+| | Stworzenie grafik. | **Kacper Kirszewski** |
 | **Aplikacja Webowa** | Utworzenie kompletnej aplikacji frontend (React) i backend (Node.js). | **Jonatan Karmiński** |
 | | Przygotowanie systemu tłumaczeń iT18 (języki PL/EN). | **Jonatan Karmiński** |
 | | Implementacja wszystkich animacji na stronie (Intersection Observer, Scroll). | **Jonatan Karmiński** |
