@@ -336,11 +336,12 @@ class GameView @JvmOverloads constructor(
 
     private fun drawCar(canvas: Canvas, eng: GameEngine, camX: Float, camY: Float) {
         // Najpierw nadwozie
+        val globalOffsetY = 20f
         val cx = worldToScreenX(eng.chassisBody.position.x, camX)
         val cy = worldToScreenY(eng.chassisBody.position.y, camY)
         val carAngle = -eng.chassisBody.angle
         canvas.save()
-        canvas.translate(cx, cy)
+        canvas.translate(cx, cy + globalOffsetY)
         canvas.rotate(Math.toDegrees(carAngle.toDouble()).toFloat())
 
         if (carBitmap != null) {
@@ -365,8 +366,9 @@ class GameView @JvmOverloads constructor(
         angle: Float,
         isRear: Boolean = false   // dodany parametr z domyślną wartością
     ) {
+        val globalOffsetY = 20f
         val sx = worldToScreenX(worldX, camX)
-        val sy = worldToScreenY(worldY, camY)
+        val sy = worldToScreenY(worldY, camY) + globalOffsetY
 
         canvas.save()
         canvas.translate(sx, sy)

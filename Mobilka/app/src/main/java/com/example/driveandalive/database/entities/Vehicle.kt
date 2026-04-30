@@ -7,8 +7,8 @@ import androidx.room.PrimaryKey
 data class Vehicle(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val name: String,           
-    val description: String,   
+    val name: String,
+    val description: String,
     val drawableName: String,
     val wheelDrawableName: String,
     val isUnlocked: Boolean = false,
@@ -17,4 +17,6 @@ data class Vehicle(
     val wheelRightBias: Float = 0.28f,
     val wheelVerticalBias: Float = 0.33f,
     val carBodyVerticalOffset: Float = 0f
-)
+) {
+    override fun toString(): String = name
+}

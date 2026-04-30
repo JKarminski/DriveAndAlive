@@ -9,11 +9,14 @@ data class GameMap(
     val id: Int = 0,
     val name: String,
     val description: String,
-    val drawableName: String,   
-    val difficultyBase: Int = 1, 
+    val drawableName: String,
+    val difficultyBase: Int = 1,
     val isUnlocked: Boolean = false,
     val unlockCost: Int = 0,
-    val hasWeatherApi: Boolean = false,  
-    val latitude: Double = 52.0,         
+    val hasWeatherApi: Boolean = false,
+    val latitude: Double = 52.0,
     val longitude: Double = 21.0
-)
+) {
+    // Dla spinnera – wyświetla nazwę mapy
+    override fun toString(): String = name
+}

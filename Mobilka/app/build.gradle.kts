@@ -37,10 +37,18 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
 dependencies {
+
+    implementation(platform("com.google.firebase:firebase-bom:34.11.0"))
+    implementation("com.google.firebase:firebase-database")
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 
     implementation(libs.appcompat)
     implementation(libs.material)
@@ -52,6 +60,7 @@ dependencies {
 
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
+    implementation(libs.activity)
     kapt(libs.room.compiler)
 
     implementation(libs.lifecycle.viewmodel.ktx)
@@ -70,6 +79,17 @@ dependencies {
 
     // JBox2D – pure-Java port of Box2D, zero NDK needed
     implementation("org.jbox2d:jbox2d-library:2.2.1.1")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
+
+    // Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+    // MockWebServer (tylko debug)
+    debugImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

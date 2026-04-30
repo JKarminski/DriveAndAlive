@@ -65,26 +65,26 @@
 }
 
 [data-theme="light"] {
-  --bg:        #fdfbf7;
-  --bg2:       #f5f2eb;
-  --surface:   #ffffff;
-  --surface2:  #eae6db;
+  --bg:        #ebe6da;
+  --bg2:       #e1dccc;
+  --surface:   #f2eee4;
+  --surface2:  #d5cebc;
   --border:    rgba(0,0,0,0.08);
   --text:      #1a1918;
   --muted:     #6b665c;
-  --accent:    #16a34a;
+  --accent:    #059669;
   --accent2:   #2563eb;
   --accent3:   #7c3aed;
   --danger:    #dc2626;
 
-  --accent-rgb: 22, 163, 74;
+  --accent-rgb: 5, 150, 105;
   --accent2-rgb: 37, 99, 235;
-  --noise-opacity: 0;
+  --noise-opacity: 0.015;
   --glow-opacity: 0.15;
   --glow-hover-opacity: 0.25;
 
   --btn-text:  #ffffff;
-  --btn-grad-end: #15803d;
+  --btn-grad-end: #047857;
 
   --shadow-sm: 0 4px 16px rgba(0,0,0,.08);
   --shadow:    0 8px 32px rgba(0,0,0,.12);
@@ -260,7 +260,7 @@ html.lenis, html.lenis body {
 }
 
 [data-theme="light"] .glass-card {
-  background: rgba(255,255,255,.95);
+  background: rgba(242, 238, 228, 0.85); /* based on var(--surface) #f2eee4 */
   box-shadow: var(--shadow-sm);
 }
 
