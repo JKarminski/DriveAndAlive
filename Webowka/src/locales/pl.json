@@ -242,7 +242,10 @@
     "statWind": "Wiatr",
     "demoNote": "ℹ️ Demo mode – dodaj klucz API OpenWeatherMap w Weather.tsx aby pobrać rzeczywiste dane.",
     "gameNoteTitle": "Jak pogoda wpływa na grę?",
-    "gameNoteDesc": "Deszcz zmniejsza przyczepność o 30%. Mgła ogranicza widoczność. Wiatr boczny wpływa na trajektorię pojazdu."
+    "gameNoteDesc": "Deszcz zmniejsza przyczepność o 30%. Mgła ogranicza widoczność. Wiatr boczny wpływa na trajektorię pojazdu.",
+    "liveNoteTitle": "Live Data ze stacji meteo",
+    "liveNoteDesc": "Dane pogodowe dla lokacji map pobierane są 100% na żywo za pomocą niezawodnego i darmowego API Open-Meteo.",
+    "tryAgain": "Spróbuj ponownie"
   },
   "privacy": {
     "label": "Bezpieczeństwo danych",

@@ -6,7 +6,7 @@ const {
   getAchievements,
   getAchievementById,
   getStats,
-} = require("../../src/services/achievementsService");
+} = require("../src/services/achievementsService");
 
 describe("achievementsService", () => {
   /* ── getAchievements ── */

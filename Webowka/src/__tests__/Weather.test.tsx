@@ -8,10 +8,10 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
-import Weather from "../../pages/Weather";
-import { I18nContext } from "../../context/I18nContext";
+import Weather from "../pages/Weather";
+import { I18nContext } from "../context/I18nContext";
 
-vi.mock("../../services/api", () => ({
+vi.mock("../services/api", () => ({
   api: {
     weather: {
       get: vi.fn(),
@@ -19,7 +19,7 @@ vi.mock("../../services/api", () => ({
   },
 }));
 
-import { api } from "../../services/api";
+import { api } from "../services/api";
 
 const mockWeatherData = {
   city:        "Warsaw",
@@ -56,6 +56,10 @@ const mockI18n = {
       "weather.statWind":     "Wiatr",
       "weather.gameNoteTitle":"Jak pogoda wpływa na grę?",
       "weather.gameNoteDesc": "Deszcz zmniejsza przyczepność.",
+      "leaderboard.trackPrairie": "Preria",
+      "leaderboard.trackMountains": "Góry",
+      "leaderboard.trackArctic": "Arktyk",
+      "leaderboard.trackJungle": "Dżungla",
     };
     return map[key] ?? key;
   },
@@ -101,16 +105,16 @@ describe("Weather page", () => {
   it("renders quick city chips", async () => {
     renderWeather();
     await waitFor(() => {
-      expect(screen.getByText("Warsaw")).toBeInTheDocument();
-      expect(screen.getByText("Berlin")).toBeInTheDocument();
-      expect(screen.getByText("Tokyo")).toBeInTheDocument();
+      expect(screen.getAllByText("Preria").length).toBeGreaterThan(0);
+      expect(screen.getByText("Góry")).toBeInTheDocument();
+      expect(screen.getByText("Dżungla")).toBeInTheDocument();
     });
   });
 
   it("displays weather data after load", async () => {
     renderWeather();
     await waitFor(() => {
-      expect(screen.getByText(/Warsaw/)).toBeInTheDocument();
+      expect(screen.getAllByText(/Preria/).length).toBeGreaterThan(0);
       expect(screen.getByText("14°C")).toBeInTheDocument();
     });
   });
@@ -148,7 +152,7 @@ describe("Weather page", () => {
     fireEvent.submit(input.closest("form")!);
 
     await waitFor(() => {
-      expect(api.weather.get).toHaveBeenCalledWith("Berlin", "metric", "pl");
+      expect(api.weather.get).toHaveBeenCalledWith("Berlin", { lang: "pl" });
     });
   });
 
@@ -156,10 +160,10 @@ describe("Weather page", () => {
     renderWeather();
     await waitFor(() => screen.getByText("14°C"));
 
-    fireEvent.click(screen.getById("city-chip-berlin"));
+    fireEvent.click(screen.getById("city-chip-trackjungle"));
 
     await waitFor(() => {
-      expect(api.weather.get).toHaveBeenCalledWith("Berlin", "metric", "pl");
+      expect(api.weather.get).toHaveBeenCalledWith("Dżungla", { lat: -3.4, lon: -60.0, lang: "pl" });
     });
   });
 

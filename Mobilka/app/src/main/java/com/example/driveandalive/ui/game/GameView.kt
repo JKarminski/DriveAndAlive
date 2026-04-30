@@ -182,12 +182,12 @@ class GameView @JvmOverloads constructor(
         if (startX > 0) startX -= width * 2f
 
         mountainPath.moveTo(startX, height * 0.72f)
-        for (i in 0..40) {
+        for (i in 0..60) {
             val x = startX + i * width * 0.07f
             val y = height * 0.72f - 120f - sin(i * 1.7f) * 90f - cos(i * 0.9f) * 50f
             mountainPath.lineTo(x, y)
         }
-        mountainPath.lineTo(startX + 40 * width * 0.07f, height * 0.72f)
+        mountainPath.lineTo(startX + 60 * width * 0.07f, height * 0.72f)
         mountainPath.close()
 
         canvas.drawPath(mountainPath, mountainPaint)
@@ -209,8 +209,11 @@ class GameView @JvmOverloads constructor(
         terrainEdgePaint.color = Color.parseColor(edgeColor)
 
         val step = GameEngine.TERRAIN_STEP_M
-        val startIdx = ((camX / step) - 3).toInt().coerceAtLeast(0)
-        val endIdx   = (startIdx + (width / ptm / step + 8).toInt()).coerceAtMost(eng.terrainPoints.size - 1)
+        val leftEdgeWorldX = camX - (carScreenX / ptm)
+        val rightEdgeWorldX = camX + ((width - carScreenX) / ptm)
+        
+        val startIdx = ((leftEdgeWorldX / step) - 5).toInt().coerceAtLeast(0)
+        val endIdx   = ((rightEdgeWorldX / step) + 5).toInt().coerceAtMost(eng.terrainPoints.size - 1)
 
         terrainPath.reset()
         var first = true

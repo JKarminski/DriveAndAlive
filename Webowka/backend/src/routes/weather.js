@@ -14,10 +14,9 @@ const router  = express.Router();
 router.get(
   "/",
   [
-    query("city")
-      .notEmpty().withMessage("city is required")
-      .isString().trim()
-      .isLength({ min: 1, max: 100 }).withMessage("city must be 1-100 chars"),
+    query("city").optional().isString().trim().isLength({ max: 100 }),
+    query("lat").optional().isFloat(),
+    query("lon").optional().isFloat(),
     query("units").optional().isIn(["metric", "imperial"]),
     query("lang").optional().isIn(["pl", "en"]),
   ],
@@ -27,8 +26,18 @@ router.get(
       return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    const { city, units = "metric", lang = "pl" } = req.query;
-    const result = await svc.getWeatherByCity(city, units, lang);
+    const { city, lat, lon, units = "metric", lang = "pl" } = req.query;
+
+    if (!city && (lat === undefined || lon === undefined)) {
+      return res.status(400).json({ success: false, error: "city or lat/lon required" });
+    }
+
+    let result;
+    if (lat !== undefined && lon !== undefined) {
+      result = await svc.getWeatherByCoordinates(parseFloat(lat), parseFloat(lon), city || "Mapa Gry");
+    } else {
+      result = await svc.getWeatherByCity(city, units, lang);
+    }
 
     if (!result.success) {
       const status = result.error?.includes("not found") ? 404 : 502;

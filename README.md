@@ -53,6 +53,15 @@ npm run dev
 ```
 *Aplikacja webowa otworzy się na porcie `5173` (http://localhost:5173).*
 
+### 3. Uruchomienie za pomocą Dockera (Alternatywa)
+Dla maksymalnej wygody i uniknięcia instalacji Node.js na komputerze docelowym, aplikację webową (Frontend i Backend jednocześnie) można odpalić używając środowiska kontenerowego Docker. 
+
+W głównym oknie (folder `Webowka`), uruchom polecenie:
+```bash
+docker-compose up
+```
+*Aplikacja automatycznie pobierze wymagane zasoby, zbuduje się i uruchomi oba serwery bez jakichkolwiek konfliktów środowiskowych.*
+
 ---
 
 ## 📚 Dokumentacja Techniczna

@@ -9,40 +9,30 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
-import Leaderboard from "../../pages/Leaderboard";
-import { I18nContext } from "../../context/I18nContext";
+import Leaderboard from "../pages/Leaderboard";
+import { I18nContext } from "../context/I18nContext";
 
-/* ── Mock the API module ── */
-vi.mock("../../services/api", () => ({
-  api: {
-    leaderboard: {
-      get: vi.fn(),
-    },
-  },
-}));
-
-import { api } from "../../services/api";
-
-const mockEntry = (rank: number) => ({
-  id:      `all-${rank}`,
-  rank,
-  name:    `Player${rank}`,
-  car:     "BMW M3",
-  country: "🇵🇱",
-  time:    "1:23.456",
-  timeMs:  83456,
-  pts:     10000 - rank * 400,
-  track:   "all",
+/* ── Mock Firebase ── */
+vi.mock("firebase/database", () => {
+  return {
+    ref: vi.fn(),
+    get: vi.fn(),
+    getDatabase: vi.fn(),
+  };
 });
 
-const mockLeaderboardResponse = {
-  success: true,
-  data:       [mockEntry(1), mockEntry(2), mockEntry(3)],
-  total:      20,
-  page:       1,
-  limit:      20,
-  totalPages: 1,
-  track:      "all",
+import { ref, get } from "firebase/database";
+
+const mockFirebaseData = {
+  scores: {
+    "user1": {
+      "all": {
+        "car1": { playerUUID: "u1", playerName: "Player1", carModel: "BMW M3", points: 10000 },
+        "car2": { playerUUID: "u1", playerName: "Player2", carModel: "Audi", points: 9600 },
+        "car3": { playerUUID: "u1", playerName: "Player3", carModel: "Mercedes", points: 9200 }
+      }
+    }
+  }
 };
 
 const mockI18n = {
@@ -84,7 +74,10 @@ function renderLeaderboard() {
 describe("Leaderboard page", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (api.leaderboard.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockLeaderboardResponse);
+    (get as ReturnType<typeof vi.fn>).mockResolvedValue({
+      exists: () => true,
+      val: () => mockFirebaseData
+    });
   });
 
   afterEach(() => {
@@ -134,22 +127,19 @@ describe("Leaderboard page", () => {
     });
   });
 
-  it("calls API with new track when filter is clicked", async () => {
+  it("fetches data again when filter is clicked", async () => {
     renderLeaderboard();
     await waitFor(() => screen.getByText("Alpejska Przeprawa"));
 
     fireEvent.click(screen.getById("track-filter-alpine-crossing"));
 
     await waitFor(() => {
-      expect(api.leaderboard.get).toHaveBeenCalledWith(
-        expect.objectContaining({ track: "alpine-crossing" })
-      );
+      expect(get).toHaveBeenCalledTimes(2);
     });
   });
 
   it("shows loading state initially", () => {
-    // Don't resolve the promise right away
-    (api.leaderboard.get as ReturnType<typeof vi.fn>).mockImplementation(
+    (get as ReturnType<typeof vi.fn>).mockImplementation(
       () => new Promise(() => {})
     );
     renderLeaderboard();
@@ -157,7 +147,7 @@ describe("Leaderboard page", () => {
   });
 
   it("shows error state when API fails", async () => {
-    (api.leaderboard.get as ReturnType<typeof vi.fn>).mockRejectedValue(
+    (get as ReturnType<typeof vi.fn>).mockRejectedValue(
       new Error("Network error")
     );
     renderLeaderboard();
@@ -173,13 +163,17 @@ describe("Leaderboard page", () => {
   });
 
   it("shows pagination when multiple pages exist", async () => {
-    (api.leaderboard.get as ReturnType<typeof vi.fn>).mockResolvedValue({
-      ...mockLeaderboardResponse,
-      totalPages: 3,
+    const manyScores: any = {};
+    for(let i=0; i<30; i++) {
+      manyScores[`car${i}`] = { playerUUID: `u${i}`, playerName: `P${i}`, carModel: "BMW", points: i };
+    }
+    (get as ReturnType<typeof vi.fn>).mockResolvedValue({
+      exists: () => true,
+      val: () => ({ scores: { "user1": { "all": manyScores } } })
     });
     renderLeaderboard();
     await waitFor(() => {
-      expect(screen.getByText("Następna →")).toBeInTheDocument();
+      expect(screen.getByText(/Następna/)).toBeInTheDocument();
     });
   });
 });

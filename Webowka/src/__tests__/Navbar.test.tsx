@@ -8,9 +8,9 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi, describe, it, expect, beforeEach } from "vitest";
-import Navbar from "../../components/Navbar/Navbar";
-import { ThemeContext } from "../../context/ThemeContext";
-import { I18nContext } from "../../context/I18nContext";
+import Navbar from "../components/Navbar/Navbar";
+import { ThemeContext } from "../context/ThemeContext";
+import { I18nContext } from "../context/I18nContext";
 
 /* ── Mock contexts ── */
 const mockTheme = {
@@ -86,7 +86,7 @@ describe("Navbar component", () => {
 
   it("toggles mobile menu on burger click", () => {
     renderNavbar();
-    const burger = screen.getByRole("button", { name: /menu/i });
+    const burger = screen.getByLabelText(/menu/i);
     expect(burger).toBeInTheDocument();
     fireEvent.click(burger);
     // After click, burger should have open class - check aria or content

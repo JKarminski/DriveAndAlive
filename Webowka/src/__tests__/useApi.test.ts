@@ -6,7 +6,7 @@
 
 import { renderHook, waitFor } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
-import { useApi } from "../../hooks/useApi";
+import { useApi } from "../hooks/useApi";
 
 describe("useApi hook", () => {
   beforeEach(() => {

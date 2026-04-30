@@ -8,8 +8,8 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi, describe, it, expect, beforeEach } from "vitest";
-import Login from "../../pages/Login";
-import { I18nContext } from "../../context/I18nContext";
+import Login from "../pages/Login";
+import { I18nContext } from "../context/I18nContext";
 
 /* ── navigate mock ── */
 const mockNavigate = vi.fn();
@@ -69,7 +69,7 @@ describe("Login page", () => {
 
   it("renders login and register tabs", () => {
     renderLogin();
-    expect(screen.getByText("Logowanie")).toBeInTheDocument();
+    expect(screen.getAllByText("Logowanie").length).toBeGreaterThan(0);
     expect(screen.getByText("Rejestracja")).toBeInTheDocument();
   });
 

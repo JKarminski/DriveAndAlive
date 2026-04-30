@@ -28,7 +28,8 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "testMatch": ["**/__tests__/**/*.test.js"],
+    "roots": ["<rootDir>/__tests__"],
+    "testMatch": ["**/*.test.js"],
     "collectCoverageFrom": ["src/**/*.js", "!src/server.js"]
   }
 }

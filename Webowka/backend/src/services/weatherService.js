@@ -87,4 +87,66 @@ function getMockWeather(city) {
   };
 }
 
-module.exports = { getWeatherByCity, normalizeWeatherResponse, getMockWeather };
+/**
+ * Fetch current weather for coordinates using Open-Meteo API.
+ * @param {number} lat
+ * @param {number} lon
+ * @param {string} cityName
+ * @returns {Promise<{ success: boolean, data?: object, error?: string }>}
+ */
+async function getWeatherByCoordinates(lat, lon, cityName = "Lokalizacja Mapy") {
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,surface_pressure,wind_speed_10m,weather_code`;
+    const res = await fetch(url, { timeout: 8000 });
+    
+    if (!res.ok) {
+      return { success: false, error: `Open-Meteo API error: ${res.status}` };
+    }
+
+    const json = await res.json();
+    return { success: true, data: normalizeOpenMeteoResponse(json, cityName), mock: false };
+  } catch (err) {
+    return { success: false, error: "Failed to reach Open-Meteo service." };
+  }
+}
+
+function normalizeOpenMeteoResponse(raw, cityName) {
+  const code = raw.current?.weather_code ?? 0;
+  let description = "Czyste niebo";
+  let icon = "01d";
+  
+  if (code >= 1 && code <= 3) {
+    description = "Częściowe zachmurzenie";
+    icon = "02d";
+  } else if (code === 45 || code === 48) {
+    description = "Mgła";
+    icon = "50d";
+  } else if (code >= 51 && code <= 67) {
+    description = "Deszcz";
+    icon = "09d";
+  } else if (code >= 71 && code <= 82) {
+    description = "Śnieg";
+    icon = "13d";
+  } else if (code >= 95) {
+    description = "Burza";
+    icon = "11d";
+  }
+
+  return {
+    city:        cityName,
+    country:     "Live Map",
+    description: description,
+    icon:        icon,
+    temp:        Math.round(raw.current?.temperature_2m ?? 0),
+    feelsLike:   Math.round(raw.current?.apparent_temperature ?? 0),
+    humidity:    raw.current?.relative_humidity_2m ?? 0,
+    pressure:    Math.round(raw.current?.surface_pressure ?? 0),
+    windSpeed:   raw.current?.wind_speed_10m ?? 0,
+    visibility:  10000,
+    sunrise:     null,
+    sunset:      null,
+    timestamp:   Date.now(),
+  };
+}
+
+module.exports = { getWeatherByCity, getWeatherByCoordinates, normalizeWeatherResponse, normalizeOpenMeteoResponse, getMockWeather };

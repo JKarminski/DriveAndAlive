@@ -6,7 +6,7 @@
  */
 
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
-import { api } from "../../services/api";
+import { api } from "../services/api";
 
 /* ── Helpers ── */
 function mockFetch(body: object, status = 200) {

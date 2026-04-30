@@ -15,7 +15,7 @@ const { ACHIEVEMENTS, CATEGORIES } = require("../data/achievements");
 function getAchievements({ category, lang = "en" } = {}) {
   let result = ACHIEVEMENTS;
 
-  if (category && CATEGORIES.includes(category)) {
+  if (category) {
     result = result.filter((a) => a.category === category);
   }
 

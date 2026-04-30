@@ -5,26 +5,34 @@ import { useApi } from "../hooks/useApi";
 import { api } from "../services/api";
 import type { WeatherData } from "../services/api";
 
-const CITIES = ["Warsaw", "Berlin", "Paris", "London", "Oslo", "Tokyo", "New York", "Sydney"];
+const GAME_MAPS = [
+  { key: "trackPrairie", lat: 52.0, lon: 21.0 },
+  { key: "trackMountains", lat: 49.2, lon: 19.9 },
+  { key: "trackArctic", lat: 69.6, lon: 18.9 },
+  { key: "trackJungle", lat: -3.4, lon: -60.0 }
+];
 
 const weatherEmoji = (desc: string): string => {
   const d = desc.toLowerCase();
-  if (d.includes("rain"))              return "🌧️";
-  if (d.includes("cloud"))             return "☁️";
-  if (d.includes("snow"))              return "❄️";
-  if (d.includes("storm") || d.includes("thunder")) return "⛈️";
-  if (d.includes("mist") || d.includes("fog"))      return "🌫️";
+  if (d.includes("rain") || d.includes("deszcz")) return "🌧️";
+  if (d.includes("cloud") || d.includes("chmur")) return "☁️";
+  if (d.includes("snow") || d.includes("śnieg"))  return "❄️";
+  if (d.includes("storm") || d.includes("burz"))  return "⛈️";
+  if (d.includes("mist") || d.includes("mgł"))    return "🌫️";
   return "☀️";
 };
 
 export default function Weather(): JSX.Element {
-  const { t } = useI18n();
-  const [city,  setCity]  = useState("Warsaw");
-  const [input, setInput] = useState("Warsaw");
+  const { t, lang } = useI18n();
+  const [activeMap, setActiveMap] = useState<{key: string; lat: number; lon: number} | null>(GAME_MAPS[0]);
+  const [searchCity, setSearchCity] = useState("");
+  const [input, setInput] = useState("");
 
   const { data: res, loading, error, refetch } = useApi(
-    () => api.weather.get(city),
-    [city]
+    () => activeMap 
+      ? api.weather.get(t(`leaderboard.${activeMap.key}`), { lat: activeMap.lat, lon: activeMap.lon, lang })
+      : api.weather.get(searchCity, { lang }),
+    [activeMap, searchCity, lang]
   );
 
   const displayed: WeatherData | null = res?.data ?? null;
@@ -32,7 +40,10 @@ export default function Weather(): JSX.Element {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = input.trim();
-    if (trimmed) setCity(trimmed);
+    if (trimmed) {
+      setActiveMap(null);
+      setSearchCity(trimmed);
+    }
   };
 
   return (
@@ -60,14 +71,14 @@ export default function Weather(): JSX.Element {
 
         {/* Quick city chips */}
         <div className={styles.chipBar} style={{ marginBottom: 32 }}>
-          {CITIES.map((c) => (
+          {GAME_MAPS.map((m) => (
             <button
-              key={c}
-              id={`city-chip-${c.toLowerCase().replace(/\s/g, "-")}`}
-              className={`${styles.chip} ${city === c ? styles.chipActive : ""}`}
-              onClick={() => { setCity(c); setInput(c); }}
+              key={m.key}
+              id={`city-chip-${m.key.toLowerCase()}`}
+              className={`${styles.chip} ${activeMap?.key === m.key ? styles.chipActive : ""}`}
+              onClick={() => { setActiveMap(m); setInput(t(`leaderboard.${m.key}`)); }}
             >
-              {c}
+              {t(`leaderboard.${m.key}`)}
             </button>
           ))}
         </div>
@@ -82,7 +93,7 @@ export default function Weather(): JSX.Element {
               className="btn btn-outline"
               style={{ display: "block", margin: "12px auto 0", fontSize: "0.8rem" }}
             >
-              Spróbuj ponownie
+              {t("weather.tryAgain")}
             </button>
           </div>
         )}
@@ -126,6 +137,15 @@ export default function Weather(): JSX.Element {
           <div>
             <strong>{t("weather.gameNoteTitle")}</strong>
             <p>{t("weather.gameNoteDesc")}</p>
+          </div>
+        </div>
+
+        {/* Live data note */}
+        <div className={`${styles.infoBox} glass-card`} style={{ marginTop: 12 }}>
+          <span className={styles.infoIcon}>📡</span>
+          <div>
+            <strong>{t("weather.liveNoteTitle")}</strong>
+            <p>{t("weather.liveNoteDesc")}</p>
           </div>
         </div>
       </div>

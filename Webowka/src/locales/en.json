@@ -251,7 +251,10 @@
   "statWind": "Wind",
   "demoNote": "ℹ️ Demo mode – add your OpenWeatherMap API key in Weather.tsx to load real data.",
   "gameNoteTitle": "How does weather affect the game?",
-  "gameNoteDesc": "Rain reduces grip by 30%. Fog limits visibility. Crosswind affects vehicle trajectory."
+  "gameNoteDesc": "Rain reduces grip by 30%. Fog limits visibility. Crosswind affects vehicle trajectory.",
+  "liveNoteTitle": "Live weather station data",
+  "liveNoteDesc": "Weather data for map locations is fetched 100% live using the reliable and free Open-Meteo API.",
+  "tryAgain": "Try again"
 },
 
   "privacy": {

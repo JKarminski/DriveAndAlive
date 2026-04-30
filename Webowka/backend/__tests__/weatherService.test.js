@@ -5,7 +5,7 @@
 const {
   normalizeWeatherResponse,
   getMockWeather,
-} = require("../../src/services/weatherService");
+} = require("../src/services/weatherService");
 
 describe("weatherService", () => {
   /* ── getMockWeather ── */

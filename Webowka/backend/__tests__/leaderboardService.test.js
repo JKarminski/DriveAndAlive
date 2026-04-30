@@ -6,7 +6,7 @@ const {
   getLeaderboard,
   getTopPlayers,
   getTracks,
-} = require("../../src/services/leaderboardService");
+} = require("../src/services/leaderboardService");
 
 describe("leaderboardService", () => {
   /* ── getTracks ── */

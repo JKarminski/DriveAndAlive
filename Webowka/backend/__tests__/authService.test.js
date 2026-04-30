@@ -2,7 +2,7 @@
  * Unit tests – authService.js
  */
 
-const { register, login, getProfile } = require("../../src/services/authService");
+const { register, login, getProfile } = require("../src/services/authService");
 
 describe("authService", () => {
   /* ── register ── */

@@ -6,7 +6,7 @@
     "difficultyBase": 2,
     "isUnlocked": false,
     "unlockCost": 400,
-    "hasWeatherApi": false,
+    "hasWeatherApi": true,
     "latitude": 49.2,
     "longitude": 19.9,
     "mapType": "MOUNTAINS"

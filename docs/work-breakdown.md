@@ -13,12 +13,13 @@ Projekt **DriveAndAlive** został zrealizowany przez 3-osobowy zespół. Poniżs
 | | Elementy wizualne w grze. | **Kacper Liszkowski** |
 | | Dodanie baz danych odpowiedzialnych za tablice rekordów (Scoreboards). | **Kacper Kirszewski** |
 | **Aplikacja Webowa** | Utworzenie kompletnej aplikacji frontend (React) i backend (Node.js). | **Jonatan Karmiński** |
-| | Przygotowanie systemu tłumaczeń iT18 (języki PL/EN). | **Kacper Liszkowski** |
+| | Przygotowanie systemu tłumaczeń iT18 (języki PL/EN). | **Jonatan Karmiński** |
 | | Implementacja wszystkich animacji na stronie (Intersection Observer, Scroll). | **Jonatan Karmiński** |
 | | Ustawienie motywów na stronie (Dark / Formal / Light Mode). | **Jonatan Karmiński** |
 | | Podłączenie baz danych pod tabele wyników (Leaderboard) i integracja z API. | **Kacper Kirszewski** |
 | | System logowania po stronie webowej (autoryzacja). | **Kacper Kirszewski** |
-| | Finalna korekta tekstów i docelowe tłumaczenia na stronie. | **Kacper Liszkowski** |
+| | Finalna korekta tekstów. | **Kacper Liszkowski** |
+| | Dodanie tłumaczenia na stronach. | **Kacper Liszkowski** |
 | **Testy (QA)** | Zaimplementowanie testów jednostkowych i integracyjnych (Frontend - Vitest). | **Jonatan Karmiński** |
 | | Zaimplementowanie testów API i logiki serwera (Backend - Jest, Supertest). | **Jonatan Karmiński** |
 

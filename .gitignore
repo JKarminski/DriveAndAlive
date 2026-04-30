@@ -1,0 +1,7 @@
+# Ustawienia IDE
+.idea/
+
+# Błędne pliki npm w głównym katalogu
+/package-lock.json
+/package.json
+/node_modules/

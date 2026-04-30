@@ -180,8 +180,13 @@ export const api = {
 
   /* ── Weather ── */
   weather: {
-    get: (city: string, units: "metric" | "imperial" = "metric", lang = "pl") => {
-      const q = new URLSearchParams({ city, units, lang });
+    get: (city: string, opts?: { lat?: number; lon?: number; units?: "metric" | "imperial"; lang?: string }) => {
+      const units = opts?.units ?? "metric";
+      const lang = opts?.lang ?? "pl";
+      const q = new URLSearchParams({ units, lang });
+      if (city) q.set("city", city);
+      if (opts?.lat !== undefined) q.set("lat", String(opts.lat));
+      if (opts?.lon !== undefined) q.set("lon", String(opts.lon));
       return apiFetch<WeatherResponse>(`/weather?${q}`);
     },
   },
