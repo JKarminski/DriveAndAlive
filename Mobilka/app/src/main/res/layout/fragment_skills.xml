@@ -18,21 +18,6 @@
                 android:text="@string/skills_title" android:textColor="@color/text_primary"
                 android:textSize="26sp" android:textStyle="bold" android:fontFamily="sans-serif-condensed"/>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_ranking"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🏆 RANKING"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:paddingStart="12dp"
-                android:paddingTop="6dp"
-                android:paddingEnd="12dp"
-                android:paddingBottom="6dp"
-                android:textColor="@color/text_primary"
-                app:backgroundTint="@color/stat_grip"
-                app:cornerRadius="20dp"
-                android:layout_marginEnd="16dp" />
 
             <TextView android:id="@+id/tv_coins" android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:textColor="@color/coin_color" android:textSize="20sp" android:textStyle="bold"

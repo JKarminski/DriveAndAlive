@@ -13,7 +13,12 @@
           "package_name": "com.example.driveandalive"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "715413667571-1julpnm4m8odsiqnn613et976kcu943q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBNO0oBrnqhJBK3mr2apkToDclHcSz6IiE"
@@ -21,7 +26,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "715413667571-1julpnm4m8odsiqnn613et976kcu943q.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

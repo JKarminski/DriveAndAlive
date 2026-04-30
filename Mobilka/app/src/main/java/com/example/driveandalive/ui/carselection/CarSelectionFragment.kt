@@ -1,5 +1,6 @@
 package com.example.driveandalive.ui.carselection
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.example.driveandalive.R
 import com.example.driveandalive.databinding.FragmentCarSelectionBinding
+import com.example.driveandalive.ranking.RankingActivity
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -34,6 +36,10 @@ class CarSelectionFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        binding.btnRanking.setOnClickListener {
+            startActivity(Intent(requireContext(), RankingActivity::class.java))
+        }
 
         adapter = CarPagerAdapter { vehicle, action ->
             when (action) {

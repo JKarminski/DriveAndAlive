@@ -218,6 +218,8 @@ class GameActivity : AppCompatActivity() {
                     putExtra("maxSpeed", gameEngine.maxSpeedMs * 3.6f)
                     putExtra("gearChanges", gameEngine.gearChanges)
                     putExtra("endReason", gameEngine.endReason)
+                    putExtra("mapId", mapId)
+                    putExtra("vehicleId", vehicleId)
                 }
                 startActivity(intent)
                 finish()

@@ -1,5 +1,6 @@
 package com.example.driveandalive.repository
 
+import android.util.Log
 import com.example.driveandalive.database.AppDatabase
 import com.example.driveandalive.database.entities.*
 import com.example.driveandalive.network.RetrofitClient
@@ -32,7 +33,10 @@ class GameRepository(private val db: AppDatabase) {
 
     suspend fun getVehicleById(id: Int): Vehicle? = db.vehicleDao().getVehicleById(id)
 
-    suspend fun unlockVehicle(vehicleId: Int) = db.vehicleDao().unlockVehicle(vehicleId)
+    suspend fun unlockVehicle(vehicleId: Int) {
+        db.vehicleDao().unlockVehicle(vehicleId)
+        ensureVehicleStats(vehicleId)
+    }
 
     fun getVehicleStats(vehicleId: Int): Flow<VehicleStats?> =
         db.vehicleStatsDao().getStats(vehicleId)
@@ -40,7 +44,23 @@ class GameRepository(private val db: AppDatabase) {
     suspend fun getVehicleStatsSuspend(vehicleId: Int): VehicleStats? =
         db.vehicleStatsDao().getStatsSuspend(vehicleId)
 
+    // Zapewnia, że dla pojazdu istnieje wpis w vehicle_stats
+    suspend fun getOrCreateVehicleStats(vehicleId: Int): VehicleStats {
+        Log.d("GameRepository", "getOrCreate for vehicle $vehicleId")
+        var stats = db.vehicleStatsDao().getStatsSuspend(vehicleId)
+        if (stats == null) {
+            Log.d("GameRepository", "Creating new stats for vehicle $vehicleId")
+            stats = VehicleStats(vehicleId = vehicleId)
+            db.vehicleStatsDao().insertStats(stats)
+        } else {
+            Log.d("GameRepository", "Existing stats: engine=${stats.engineLevel}")
+        }
+        return stats
+    }
+
     suspend fun upgradeVehicleStat(vehicleId: Int, stat: StatType, cost: Int): Boolean {
+        // Najpierw upewnij się, że wpis istnieje
+        val stats = getOrCreateVehicleStats(vehicleId)
         val spent = spendCoins(cost)
         if (!spent) return false
         when (stat) {
@@ -50,6 +70,13 @@ class GameRepository(private val db: AppDatabase) {
             StatType.DURABILITY -> db.vehicleStatsDao().upgradeDurability(vehicleId)
         }
         return true
+    }
+
+    suspend fun ensureVehicleStats(vehicleId: Int) {
+        val stats = db.vehicleStatsDao().getStatsSuspend(vehicleId)
+        if (stats == null) {
+            db.vehicleStatsDao().insertStats(VehicleStats(vehicleId = vehicleId))
+        }
     }
 
     fun getActiveSkills(vehicleId: Int): Flow<List<VehicleSkill>> =
@@ -83,7 +110,7 @@ class GameRepository(private val db: AppDatabase) {
                 currentParams = "rain,wind_speed_10m,weather_code"
             )
         } catch (e: Exception) {
-            null 
+            null
         }
     }
 }
