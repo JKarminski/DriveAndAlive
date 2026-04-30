@@ -117,7 +117,7 @@
   gap: 40px;
   flex-wrap: wrap;
   padding: 24px 32px;
-  background: rgba(255,255,255,.04);
+  background: rgba(128,128,128,.1);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   backdrop-filter: blur(12px);
@@ -303,12 +303,12 @@
 
 .postCard {
   padding: 28px;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-lg), 0 0 40px rgba(128,128,128,0.15);
   }
 }
 

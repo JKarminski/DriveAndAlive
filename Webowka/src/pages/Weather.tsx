@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styles from "./PageShared.module.scss";
+import { useI18n } from "../context/I18nContext";
 
 interface WeatherData {
   name: string;
@@ -22,6 +23,8 @@ const weatherEmoji = (desc: string): string => {
 };
 
 export default function Weather(): JSX.Element {
+  const { t } = useI18n();
+
   const [city, setCity]       = useState("Warsaw");
   const [input, setInput]     = useState("Warsaw");
   const [data, setData]       = useState<WeatherData | null>(null);
@@ -37,11 +40,11 @@ export default function Weather(): JSX.Element {
       const res = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(c)}&appid=${API_KEY}&units=metric&lang=pl`
       );
-      if (!res.ok) throw new Error("Miasto nie znalezione");
+      if (!res.ok) throw new Error(t("weather.errNotFound") || "Miasto nie znalezione");
       const json: WeatherData = await res.json();
       setData(json);
     } catch (e: any) {
-      setError(e.message || "Błąd pobierania danych");
+      setError(e.message || t("weather.errFetch") || "Błąd pobierania danych");
       setData(null);
     } finally {
       setLoading(false);
@@ -58,7 +61,7 @@ export default function Weather(): JSX.Element {
   /* Mock data for when API key is "demo" */
   const mock: WeatherData = {
     name: city,
-    weather: [{ description: "częściowe zachmurzenie", icon: "02d" }],
+    weather: [{ description: t("weather.mockDesc") || "częściowe zachmurzenie", icon: "02d" }],
     main: { temp: 14, feels_like: 12, humidity: 68, pressure: 1013 },
     wind: { speed: 5.2 },
     sys: { country: "PL" },
@@ -69,18 +72,18 @@ export default function Weather(): JSX.Element {
     <div className={styles.page}>
       <div className="container" style={{ maxWidth: 780 }}>
         <div className={`${styles.pageHeader} fade-up`}>
-          <span className="section-label">⛅ Warunki drogowe</span>
-          <h1 className="section-title">Pogoda na trasie</h1>
+          <span className="section-label">⛅ {t("weather.label")}</span>
+          <h1 className="section-title">{t("weather.title")}</h1>
           <p className="section-sub">
-            Sprawdź aktualne warunki pogodowe przed wyruszeniem. Pogoda w grze jest synchronizowana z rzeczywistą.
+            {t("weather.subtitle")}
           </p>
         </div>
 
         {/* Search */}
         <form onSubmit={handleSearch} className={styles.weatherSearch}>
           <input className={styles.weatherInput} value={input}
-            onChange={(e) => setInput(e.target.value)} placeholder="Wpisz miasto..." />
-          <button type="submit" className="btn btn-primary">🔍 Szukaj</button>
+            onChange={(e) => setInput(e.target.value)} placeholder={t("weather.placeholder")} />
+          <button type="submit" className="btn btn-primary">🔍 {t("weather.searchBtn")}</button>
         </form>
 
         {/* Quick cities */}
@@ -94,7 +97,7 @@ export default function Weather(): JSX.Element {
         </div>
 
         {/* Main weather card */}
-        {loading && <div className={styles.weatherLoading}>⏳ Pobieranie danych...</div>}
+        {loading && <div className={styles.weatherLoading}>⏳ {t("weather.loading")}</div>}
         {error   && <div className={styles.weatherError}>⚠️ {error}</div>}
 
         {displayed && !loading && (
@@ -114,10 +117,10 @@ export default function Weather(): JSX.Element {
             </div>
             <div className={styles.weatherStats}>
               {[
-                { label:"Odczuwalna", val: `${Math.round(displayed.main.feels_like)}°C` },
-                { label:"Wilgotność",  val: `${displayed.main.humidity}%`                },
-                { label:"Ciśnienie",   val: `${displayed.main.pressure} hPa`            },
-                { label:"Wiatr",       val: `${displayed.wind.speed} m/s`               },
+                { label: t("weather.statFeelsLike"), val: `${Math.round(displayed.main.feels_like)}°C` },
+                { label: t("weather.statHumidity"),  val: `${displayed.main.humidity}%`                },
+                { label: t("weather.statPressure"),  val: `${displayed.main.pressure} hPa`            },
+                { label: t("weather.statWind"),      val: `${displayed.wind.speed} m/s`               },
               ].map((s) => (
                 <div key={s.label} className={styles.weatherStat}>
                   <span className={styles.weatherStatVal}>{s.val}</span>
@@ -127,7 +130,7 @@ export default function Weather(): JSX.Element {
             </div>
             {API_KEY === "demo" && (
               <p className={styles.demoNote}>
-                ℹ️ Demo mode – dodaj klucz API OpenWeatherMap w <code>Weather.tsx</code> aby pobrać rzeczywiste dane.
+                {t("weather.demoNote")}
               </p>
             )}
           </div>
@@ -137,8 +140,8 @@ export default function Weather(): JSX.Element {
         <div className={`${styles.infoBox} glass-card`} style={{ marginTop: 24 }}>
           <span className={styles.infoIcon}>🎮</span>
           <div>
-            <strong>Jak pogoda wpływa na grę?</strong>
-            <p>Deszcz zmniejsza przyczepność o 30%. Mgła ogranicza widoczność. Wiatr boczny wpływa na trajektorię pojazdu.</p>
+            <strong>{t("weather.gameNoteTitle")}</strong>
+            <p>{t("weather.gameNoteDesc")}</p>
           </div>
         </div>
       </div>

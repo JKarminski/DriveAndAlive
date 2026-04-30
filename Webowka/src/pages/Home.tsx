@@ -1,75 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./Home.module.scss";
-
-/* ── Mock news posts ─────────────────────────────────────── */
-const POSTS = [
-  {
-    id: 1,
-    tag: "Aktualizacja",
-    date: "28 kwi 2026",
-    title: "Patch 1.4 – nowe trasy i dynamiczna pogoda",
-    excerpt:
-      "Dodaliśmy 3 nowe trasy górskie, zintegrowane z systemem pogodowym. Deszcz, mgła i burze wpływają teraz na przyczepność i widoczność.",
-    emoji: "🌩️",
-    accent: "var(--accent2)",
-  },
-  {
-    id: 2,
-    tag: "Społeczność",
-    date: "22 kwi 2026",
-    title: "Turniej Wiosenny – wyniki i rekordy",
-    excerpt:
-      "Ponad 2 400 graczy wzięło udział w turnieju. Sprawdź tabelę wyników i odbierz nagrodę jeśli ukończyłeś top 10%.",
-    emoji: "🏆",
-    accent: "var(--accent)",
-  },
-  {
-    id: 3,
-    tag: "Map Creator",
-    date: "15 kwi 2026",
-    title: "Nowości w edytorze map – tryb terenu proceduralnego",
-    excerpt:
-      "Map Creator dostał potężną aktualizację: generowanie terenu z parametrami seed, import GPX tras i eksport do formatu .daa.",
-    emoji: "🗺️",
-    accent: "var(--accent3)",
-  },
-  {
-    id: 4,
-    tag: "Osiągnięcia",
-    date: "10 kwi 2026",
-    title: "Nowe odznaki: Mistrz Asfaltu i Król Szutru",
-    excerpt:
-      "Zdobądź nowe osiągnięcia pokonując 500 km na asfalcie lub 200 km na terenach szutrowych. Specjalne skiny dla pierwszych 500 graczy.",
-    emoji: "🎖️",
-    accent: "var(--accent)",
-  },
-];
-
-/* ── Feature tiles ───────────────────────────────────────── */
-const FEATURES = [
-  {
-    to: "/leaderboard",
-    icon: "🏆",
-    label: "Tabela wyników",
-    desc: "Globalne rankingi tras",
-    color: "#f59e0b",
-  },
-  {
-    to: "/achievements",
-    icon: "🎯",
-    label: "Osiągnięcia",
-    desc: "Setki wyzwań i nagród",
-    color: "var(--accent)",
-  },
-  {
-    to: "/map-creator",
-    icon: "🗺️",
-    label: "Map Creator",
-    desc: "Twórz własne trasy",
-    color: "var(--accent2)",
-  },
-];
+import { useI18n } from "../context/I18nContext";
 
 /* ── Intersection observer hook ──────────────────────────── */
 function useReveal() {
@@ -91,6 +23,70 @@ function useReveal() {
 export default function Home(): JSX.Element {
   const featuresReveal = useReveal();
   const postsReveal    = useReveal();
+  const { t } = useI18n();
+
+  const POSTS = [
+    {
+      id: 1,
+      tag: t("home.post1Tag"),
+      date: t("home.post1Date"),
+      title: t("home.post1Title"),
+      excerpt: t("home.post1Excerpt"),
+      emoji: "🌩️",
+      accent: "var(--accent2)",
+    },
+    {
+      id: 2,
+      tag: t("home.post2Tag"),
+      date: t("home.post2Date"),
+      title: t("home.post2Title"),
+      excerpt: t("home.post2Excerpt"),
+      emoji: "🏆",
+      accent: "var(--accent)",
+    },
+    {
+      id: 3,
+      tag: t("home.post3Tag"),
+      date: t("home.post3Date"),
+      title: t("home.post3Title"),
+      excerpt: t("home.post3Excerpt"),
+      emoji: "🗺️",
+      accent: "var(--accent3)",
+    },
+    {
+      id: 4,
+      tag: t("home.post4Tag"),
+      date: t("home.post4Date"),
+      title: t("home.post4Title"),
+      excerpt: t("home.post4Excerpt"),
+      emoji: "🎖️",
+      accent: "var(--accent)",
+    },
+  ];
+
+  const FEATURES = [
+    {
+      to: "/leaderboard",
+      icon: "🏆",
+      label: t("home.feat1Label"),
+      desc: t("home.feat1Desc"),
+      color: "#f59e0b",
+    },
+    {
+      to: "/achievements",
+      icon: "🎯",
+      label: t("home.feat2Label"),
+      desc: t("home.feat2Desc"),
+      color: "var(--accent)",
+    },
+    {
+      to: "/map-creator",
+      icon: "🗺️",
+      label: t("home.feat3Label"),
+      desc: t("home.feat3Desc"),
+      color: "var(--accent2)",
+    },
+  ];
 
   return (
     <div className={styles.home}>
@@ -112,32 +108,31 @@ export default function Home(): JSX.Element {
         </div>
 
         <div className={`${styles.heroContent} container`}>
-          <span className="section-label">🎮 Mobilna gra wyścigowa</span>
+          <span className="section-label">🎮 {t("home.heroLabel")}</span>
           <h1 className={styles.heroTitle}>
-            Poczuj<br />
-            <span className="grad-text">adrenalinę</span><br />
-            drogi
+            {t("home.heroTitle1")}<br />
+            <span className="grad-text">{t("home.heroTitleGrad")}</span><br />
+            {t("home.heroTitle2")}
           </h1>
           <p className={styles.heroSub}>
-            DriveAndAlive to mobilna gra wyścigowa z dynamiczną pogodą,
-            proceduralnymi trasami i globalnym rankingiem graczy.
+            {t("home.heroSub")}
           </p>
           <div className={styles.heroCta}>
             <Link to="/download" className="btn btn-primary">
-              ⬇️ Pobierz za darmo
+              ⬇️ {t("home.heroBtnDownload")}
             </Link>
             <Link to="/leaderboard" className="btn btn-outline">
-              🏆 Tabela wyników
+              🏆 {t("home.heroBtnLeaderboard")}
             </Link>
           </div>
 
           {/* Stats bar */}
           <div className={styles.statsBar}>
             {[
-              { val: "48K+",  label: "Graczy" },
-              { val: "120+",  label: "Tras" },
-              { val: "4.8★",  label: "Ocena" },
-              { val: "12",    label: "Krajów" },
+              { val: "48K+",  label: t("home.statPlayers") },
+              { val: "120+",  label: t("home.statTracks") },
+              { val: "4.8★",  label: t("home.statRating") },
+              { val: "12",    label: t("home.statCountries") },
             ].map((s) => (
               <div key={s.label} className={styles.statItem}>
                 <strong>{s.val}</strong>
@@ -180,8 +175,8 @@ export default function Home(): JSX.Element {
         <div className="container">
           <div className={styles.postsHeader}>
             <div>
-              <span className="section-label">📰 Aktualności</span>
-              <h2 className="section-title">Co nowego?</h2>
+              <span className="section-label">📰 {t("home.newsLabel")}</span>
+              <h2 className="section-title">{t("home.newsTitle")}</h2>
             </div>
           </div>
 
@@ -204,7 +199,7 @@ export default function Home(): JSX.Element {
                 </div>
                 <h3 className={styles.postTitle}>{p.title}</h3>
                 <p className={styles.postExcerpt}>{p.excerpt}</p>
-                <button className={styles.postReadMore}>Czytaj więcej →</button>
+                <button className={styles.postReadMore}>{t("home.readMore")} →</button>
               </article>
             ))}
           </div>
@@ -216,12 +211,12 @@ export default function Home(): JSX.Element {
         <div className="container">
           <div className={styles.ctaInner}>
             <div>
-              <h2 className={styles.ctaTitle}>Gotowy na jazdę?</h2>
-              <p className={styles.ctaSub}>Dołącz do 48 000+ graczy i stań się legendą asfaltu.</p>
+              <h2 className={styles.ctaTitle}>{t("home.ctaTitle")}</h2>
+              <p className={styles.ctaSub}>{t("home.ctaSub")}</p>
             </div>
             <div className={styles.ctaBtns}>
-              <Link to="/download" className="btn btn-primary">⬇️ Pobierz teraz</Link>
-              <Link to="/login"    className="btn btn-outline">Zaloguj się</Link>
+              <Link to="/download" className="btn btn-primary">⬇️ {t("home.ctaBtnDownload")}</Link>
+              <Link to="/login"    className="btn btn-outline">{t("nav.login")}</Link>
             </div>
           </div>
         </div>

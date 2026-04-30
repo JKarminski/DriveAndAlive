@@ -1,45 +1,48 @@
 import React from "react";
 import styles from "./PageShared.module.scss";
-
-const PLATFORMS = [
-  {
-    icon: "🤖",
-    name: "Android",
-    store: "Google Play",
-    badge: "https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg",
-    color: "#34a853",
-    version: "v1.4.2",
-    size: "87 MB",
-  },
-  {
-    icon: "",
-    name: "iOS",
-    store: "App Store",
-    badge: "https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg",
-    color: "#007aff",
-    version: "v1.4.2",
-    size: "112 MB",
-  },
-];
-
-const FEATURES = [
-  { icon:"🏎️", text:"Ponad 120 tras w 12 krajach"          },
-  { icon:"🌦️", text:"Dynamiczna pogoda wpływająca na fizykę" },
-  { icon:"🏆", text:"Globalne tabele wyników"                },
-  { icon:"🗺️", text:"Edytor własnych tras – Map Creator"     },
-  { icon:"🎯", text:"Setki osiągnięć i wyzwań"               },
-  { icon:"🌙", text:"Pełna rozgrywka offline"                 },
-];
+import { useI18n } from "../context/I18nContext";
 
 export default function Download(): JSX.Element {
+  const { t } = useI18n();
+
+  const PLATFORMS = [
+    {
+      icon: "🤖",
+      name: "Android",
+      store: "Google Play",
+      badge: "https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg",
+      color: "#34a853",
+      version: "v1.4.2",
+      size: "87 MB",
+    },
+    {
+      icon: "",
+      name: "iOS",
+      store: "App Store",
+      badge: "https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg",
+      color: "#007aff",
+      version: "v1.4.2",
+      size: "112 MB",
+    },
+  ];
+
+  const FEATURES = [
+    { icon:"🏎️", text: t("download.feat1") },
+    { icon:"🌦️", text: t("download.feat2") },
+    { icon:"🏆", text: t("download.feat3") },
+    { icon:"🗺️", text: t("download.feat4") },
+    { icon:"🎯", text: t("download.feat5") },
+    { icon:"🌙", text: t("download.feat6") },
+  ];
+
   return (
     <div className={styles.page}>
       <div className="container">
         <div className={`${styles.pageHeader} fade-up`}>
-          <span className="section-label">⬇️ Pobierz</span>
-          <h1 className="section-title">DriveAndAlive – za darmo</h1>
+          <span className="section-label">⬇️ {t("download.label")}</span>
+          <h1 className="section-title">{t("download.title")}</h1>
           <p className="section-sub">
-            Dostępna na Androida i iOS. Pobierz już teraz i poczuj adrenalinę mobilnych wyścigów.
+            {t("download.subtitle")}
           </p>
         </div>
 
@@ -51,13 +54,13 @@ export default function Download(): JSX.Element {
               <div className={styles.downloadIcon}>{p.icon}</div>
               <h2 className={styles.downloadPlatform}>{p.name}</h2>
               <div className={styles.downloadMeta}>
-                <span>Wersja {p.version}</span>
+                <span>{t("download.version")} {p.version}</span>
                 <span>·</span>
                 <span>{p.size}</span>
               </div>
               <button className={`btn btn-primary ${styles.downloadBtn}`}
                 style={{ background: `linear-gradient(135deg, ${p.color}, ${p.color}cc)` }}>
-                Pobierz na {p.name}
+                {t("download.downloadOn")} {p.name}
               </button>
             </div>
           ))}
@@ -65,7 +68,7 @@ export default function Download(): JSX.Element {
 
         {/* Features */}
         <div className={styles.downloadFeatures}>
-          <h2 className={styles.downloadFeatTitle}>Co znajdziesz w grze?</h2>
+          <h2 className={styles.downloadFeatTitle}>{t("download.whatsInside")}</h2>
           <div className={styles.downloadFeatGrid}>
             {FEATURES.map((f) => (
               <div key={f.text} className={`${styles.downloadFeat} glass-card`}>
@@ -78,7 +81,7 @@ export default function Download(): JSX.Element {
 
         {/* System req */}
         <div className={`${styles.requirementsCard} glass-card`}>
-          <h3>📋 Wymagania systemowe</h3>
+          <h3>📋 {t("download.sysReq")}</h3>
           <div className={styles.reqGrid}>
             <div>
               <strong>🤖 Android</strong>

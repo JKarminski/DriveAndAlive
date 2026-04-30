@@ -2,14 +2,15 @@ import React, { useState, useEffect, useRef } from "react";
 import { NavLink, Link, useLocation } from "react-router-dom";
 import styles from "./Navbar.module.scss";
 import { useTheme } from "../../context/ThemeContext";
+import { useI18n } from "../../context/I18nContext";
 
 const NAV_ITEMS = [
-  { to: "/leaderboard",  label: "Tabela wyników",  icon: "🏆" },
-  { to: "/achievements", label: "Osiągnięcia",      icon: "🎯" },
-  { to: "/map-creator",  label: "Map Creator",      icon: "🗺️" },
-  { to: "/weather",      label: "Pogoda",           icon: "⛅" },
-  { to: "/download",     label: "Pobierz grę",      icon: "⬇️" },
-  { to: "/about",        label: "O nas",            icon: "ℹ️" },
+  { to: "/leaderboard",  i18nKey: "nav.leaderboard",  icon: "🏆" },
+  { to: "/achievements", i18nKey: "nav.achievements", icon: "🎯" },
+  { to: "/map-creator",  i18nKey: "nav.mapCreator",   icon: "🗺️" },
+  { to: "/weather",      i18nKey: "nav.weather",      icon: "⛅" },
+  { to: "/download",     i18nKey: "nav.download",     icon: "⬇️" },
+  { to: "/about",        i18nKey: "nav.about",        icon: "ℹ️" },
 ];
 
 export default function Navbar(): JSX.Element {
@@ -19,6 +20,7 @@ export default function Navbar(): JSX.Element {
   const location = useLocation();
   const prevPath = useRef(location.pathname);
   const { theme, setTheme } = useTheme();
+  const { lang, toggleLang, t } = useI18n();
 
   const cycleTheme = () => {
     if (theme === "dark") setTheme("formal");
@@ -80,13 +82,16 @@ export default function Navbar(): JSX.Element {
               }
             >
               <span className={styles.linkIcon}>{item.icon}</span>
-              {item.label}
+              {t(item.i18nKey)}
             </NavLink>
           ))}
         </nav>
 
         {/* Right side */}
         <div className={styles.right}>
+          <button className={styles.themeToggle} onClick={toggleLang} title="Zmień język">
+            {lang === "pl" ? "🇵🇱" : "🇬🇧"}
+          </button>
           <button className={styles.themeToggle} onClick={cycleTheme} title="Zmień motyw">
             {getThemeIcon()}
           </button>
@@ -97,12 +102,12 @@ export default function Navbar(): JSX.Element {
                 <span>{user.name.split(" ")[0]}</span>
               </Link>
               <button className={styles.logoutBtn} onClick={handleLogout}>
-                Wyloguj
+                {t("nav.logout")}
               </button>
             </div>
           ) : (
             <Link to="/login" className={`btn btn-primary ${styles.loginBtn}`}>
-              Zaloguj się
+              {t("nav.login")}
             </Link>
           )}
 
@@ -127,12 +132,12 @@ export default function Navbar(): JSX.Element {
               `${styles.drawerLink} ${isActive ? styles.active : ""}`
             }
           >
-            <span>{item.icon}</span> {item.label}
+            <span>{item.icon}</span> {t(item.i18nKey)}
           </NavLink>
         ))}
         {!user && (
           <Link to="/login" className={`btn btn-primary ${styles.drawerLogin}`}>
-            Zaloguj się
+            {t("nav.login")}
           </Link>
         )}
       </div>

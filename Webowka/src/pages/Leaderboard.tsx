@@ -1,14 +1,6 @@
 import React, { useState } from "react";
 import styles from "./PageShared.module.scss";
-
-const TRACKS = [
-  "Wszystkie trasy",
-  "Alpejska Przeprawa",
-  "Szutrowy Sprint",
-  "Nocna Autostrada",
-  "Górska Pętla",
-  "Pustynny Slalom",
-];
+import { useI18n } from "../context/I18nContext";
 
 const generate = (track: string) =>
   Array.from({ length: 20 }, (_, i) => ({
@@ -27,6 +19,17 @@ const generate = (track: string) =>
   }));
 
 export default function Leaderboard(): JSX.Element {
+  const { t } = useI18n();
+
+  const TRACKS = [
+    t("leaderboard.trackAll"),
+    t("leaderboard.trackAlpine"),
+    t("leaderboard.trackGravel"),
+    t("leaderboard.trackNight"),
+    t("leaderboard.trackMountain"),
+    t("leaderboard.trackDesert"),
+  ];
+
   const [activeTrack, setActiveTrack] = useState(TRACKS[0]);
   const rows = generate(activeTrack);
 
@@ -42,22 +45,22 @@ export default function Leaderboard(): JSX.Element {
       <div className="container">
         {/* Header */}
         <div className={`${styles.pageHeader} fade-up`}>
-          <span className="section-label">🏆 Globalny ranking</span>
-          <h1 className="section-title">Tabela wyników</h1>
+          <span className="section-label">🏆 {t("leaderboard.label")}</span>
+          <h1 className="section-title">{t("leaderboard.title")}</h1>
           <p className="section-sub">
-            Porównaj swoje czasy z najlepszymi graczami na świecie. Wyniki aktualizowane w czasie rzeczywistym.
+            {t("leaderboard.subtitle")}
           </p>
         </div>
 
         {/* Track filter */}
         <div className={styles.chipBar}>
-          {TRACKS.map((t) => (
+          {TRACKS.map((track) => (
             <button
-              key={t}
-              className={`${styles.chip} ${activeTrack === t ? styles.chipActive : ""}`}
-              onClick={() => setActiveTrack(t)}
+              key={track}
+              className={`${styles.chip} ${activeTrack === track ? styles.chipActive : ""}`}
+              onClick={() => setActiveTrack(track)}
             >
-              {t}
+              {track}
             </button>
           ))}
         </div>
@@ -68,10 +71,10 @@ export default function Leaderboard(): JSX.Element {
             <thead>
               <tr>
                 <th>#</th>
-                <th>Gracz</th>
-                <th>Auto</th>
-                <th>Czas</th>
-                <th>Punkty</th>
+                <th>{t("leaderboard.colPlayer")}</th>
+                <th>{t("leaderboard.colCar")}</th>
+                <th>{t("leaderboard.colTime")}</th>
+                <th>{t("leaderboard.colPts")}</th>
               </tr>
             </thead>
             <tbody>

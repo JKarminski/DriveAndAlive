@@ -6,13 +6,14 @@
   height: var(--nav-h);
   z-index: 1000;
   transition: background 0.35s ease, backdrop-filter 0.35s ease, box-shadow 0.35s ease;
-  background: transparent;
+  background: rgba(8, 11, 20, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
 
   &.scrolled {
-    background: rgba(8, 11, 20, 0.88);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 1px 0 var(--border), var(--shadow);
+    background: rgba(8, 11, 20, 0.98);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.05), var(--shadow);
   }
 }
 
@@ -72,12 +73,12 @@
   border-radius: var(--radius-sm);
   font-size: 0.85rem;
   font-weight: 500;
-  color: var(--muted);
+  color: #9ca3af;
   transition: color 0.2s, background 0.2s;
   white-space: nowrap;
 
   &:hover {
-    color: var(--text);
+    color: #fff;
     background: rgba(255,255,255,.05);
   }
 
@@ -107,9 +108,9 @@
   height: 38px;
   border-radius: 50%;
   background: rgba(128,128,128,.1);
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255,255,255,.1);
   font-size: 1.1rem;
-  color: var(--text);
+  color: #fff;
   cursor: pointer;
   transition: all 0.2s;
 
@@ -135,10 +136,10 @@
   padding: 5px 12px 5px 5px;
   border-radius: 99px;
   background: rgba(255,255,255,.06);
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255,255,255,.1);
   font-size: 0.88rem;
   font-weight: 600;
-  color: var(--text);
+  color: #fff;
   transition: all 0.2s;
 
   img {
@@ -154,7 +155,7 @@
 
 .logoutBtn {
   font-size: 0.8rem;
-  color: var(--muted);
+  color: #9ca3af;
   padding: 5px 10px;
   border-radius: var(--radius-sm);
   transition: all 0.2s;
@@ -173,7 +174,7 @@
   span {
     display: block;
     height: 2px;
-    background: var(--text);
+    background: #fff;
     border-radius: 2px;
     transition: all 0.3s ease;
     transform-origin: center;

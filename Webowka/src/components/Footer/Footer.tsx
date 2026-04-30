@@ -1,8 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import styles from "./Footer.module.scss";
+import { useI18n } from "../../context/I18nContext";
 
 export default function Footer(): JSX.Element {
+  const { t } = useI18n();
+
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -24,28 +27,28 @@ export default function Footer(): JSX.Element {
                 Drive<span className={styles.brandAccent}>And</span>Alive
               </span>
             </Link>
-            <p className={styles.slogan}>Poczuj adrenalinę drogi. Graj z graczami z całego świata.</p>
+            <p className={styles.slogan}>{t("footer.slogan")}</p>
           </div>
 
           <div className={styles.linksContainer}>
             <div className={styles.navLinks}>
-              <h4 className={styles.linksTitle}>Informacje</h4>
-              <Link to="/about" className={styles.navLink}>O nas</Link>
-              <Link to="/download" className={styles.navLink}>Pobierz grę</Link>
-              <Link to="/settings" className={styles.navLink}>Ustawienia</Link>
+              <h4 className={styles.linksTitle}>{t("footer.infoTitle")}</h4>
+              <Link to="/about" className={styles.navLink}>{t("nav.about")}</Link>
+              <Link to="/download" className={styles.navLink}>{t("nav.download")}</Link>
+              <Link to="/settings" className={styles.navLink}>{t("settings.title")}</Link>
             </div>
             
             <div className={styles.navLinks}>
-              <h4 className={styles.linksTitle}>Prywatność</h4>
-              <Link to="/privacy" target="_blank" rel="noopener noreferrer" className={styles.navLink}>Polityka prywatności</Link>
-              <Link to="/cookies" target="_blank" rel="noopener noreferrer" className={styles.navLink}>Ustawienia cookies</Link>
-              <Link to="/terms" target="_blank" rel="noopener noreferrer" className={styles.navLink}>Regulamin</Link>
+              <h4 className={styles.linksTitle}>{t("footer.privacyTitle")}</h4>
+              <Link to="/privacy" target="_blank" rel="noopener noreferrer" className={styles.navLink}>{t("footer.privacyPolicy")}</Link>
+              <Link to="/cookies" target="_blank" rel="noopener noreferrer" className={styles.navLink}>{t("footer.cookies")}</Link>
+              <Link to="/terms" target="_blank" rel="noopener noreferrer" className={styles.navLink}>{t("footer.terms")}</Link>
             </div>
           </div>
 
           <div className={styles.actionContainer}>
             <Link to="/download" className={`btn btn-primary ${styles.downloadBtn}`}>
-              ⬇️ Pobierz za darmo
+              ⬇️ {t("footer.downloadFree")}
             </Link>
 
             <div className={styles.socials}>
@@ -74,10 +77,10 @@ export default function Footer(): JSX.Element {
         <div className={styles.separator}></div>
 
         <div className={styles.bottomSection}>
-          <p className={styles.copy}>&copy; 2026 DriveAndAlive. Wszelkie prawa zastrzeżone.</p>
+          <p className={styles.copy}>{t("footer.copyright")}</p>
           <button className={styles.scrollTop} onClick={scrollToTop} aria-label="Do góry">
             <span className={styles.scrollIcon}>↑</span>
-            <span>Wróć na górę</span>
+            <span>{t("footer.backToTop")}</span>
           </button>
         </div>
       </div>

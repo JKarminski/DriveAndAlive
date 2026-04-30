@@ -65,13 +65,13 @@
 }
 
 [data-theme="light"] {
-  --bg:        #f8fafc;
-  --bg2:       #f1f5f9;
+  --bg:        #fdfbf7;
+  --bg2:       #f5f2eb;
   --surface:   #ffffff;
-  --surface2:  #e2e8f0;
-  --border:    rgba(0,0,0,0.1);
-  --text:      #0f172a;
-  --muted:     #64748b;
+  --surface2:  #eae6db;
+  --border:    rgba(0,0,0,0.08);
+  --text:      #1a1918;
+  --muted:     #6b665c;
   --accent:    #16a34a;
   --accent2:   #2563eb;
   --accent3:   #7c3aed;
@@ -86,9 +86,9 @@
   --btn-text:  #ffffff;
   --btn-grad-end: #15803d;
 
-  --shadow-sm: 0 2px 12px rgba(0,0,0,.05);
-  --shadow:    0 8px 32px rgba(0,0,0,.08);
-  --shadow-lg: 0 20px 60px rgba(0,0,0,.12);
+  --shadow-sm: 0 4px 16px rgba(0,0,0,.08);
+  --shadow:    0 8px 32px rgba(0,0,0,.12);
+  --shadow-lg: 0 20px 60px rgba(0,0,0,.25);
   --glow-g:    0 0 24px rgba(var(--accent-rgb), var(--glow-opacity));
   --glow-b:    0 0 24px rgba(var(--accent2-rgb), var(--glow-opacity));
 }
@@ -260,7 +260,7 @@ html.lenis, html.lenis body {
 }
 
 [data-theme="light"] .glass-card {
-  background: rgba(255,255,255,.8);
+  background: rgba(255,255,255,.95);
   box-shadow: var(--shadow-sm);
 }
 

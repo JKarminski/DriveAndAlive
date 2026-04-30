@@ -1,15 +1,18 @@
 import React, { useState } from "react";
 import styles from "./PageShared.module.scss";
-
-const TOOLS = [
-  { id: "terrain", label: "Teren",    icon: "🏔️" },
-  { id: "road",    label: "Droga",    icon: "🛣️" },
-  { id: "objects", label: "Obiekty",  icon: "🌲" },
-  { id: "weather", label: "Pogoda",   icon: "⛅" },
-  { id: "export",  label: "Eksport",  icon: "📤" },
-];
+import { useI18n } from "../context/I18nContext";
 
 export default function MapCreator(): JSX.Element {
+  const { t } = useI18n();
+
+  const TOOLS = [
+    { id: "terrain", label: t("mapCreator.toolTerrain"),    icon: "🏔️" },
+    { id: "road",    label: t("mapCreator.toolRoad"),    icon: "🛣️" },
+    { id: "objects", label: t("mapCreator.toolObjects"),  icon: "🌲" },
+    { id: "weather", label: t("mapCreator.toolWeather"),   icon: "⛅" },
+    { id: "export",  label: t("mapCreator.toolExport"),  icon: "📤" },
+  ];
+
   const [activeTool, setActiveTool] = useState("terrain");
   const [seed, setSeed] = useState("42");
   const [mapName, setMapName] = useState("Moja trasa");
@@ -18,10 +21,10 @@ export default function MapCreator(): JSX.Element {
     <div className={styles.page}>
       <div className="container">
         <div className={`${styles.pageHeader} fade-up`}>
-          <span className="section-label">🗺️ Kreator</span>
-          <h1 className="section-title">Map Creator</h1>
+          <span className="section-label">🗺️ {t("mapCreator.label")}</span>
+          <h1 className="section-title">{t("mapCreator.title")}</h1>
           <p className="section-sub">
-            Projektuj własne trasy, konfiguruj teren i eksportuj do aplikacji mobilnej w formacie .daa
+            {t("mapCreator.subtitle")}
           </p>
         </div>
 
@@ -29,7 +32,7 @@ export default function MapCreator(): JSX.Element {
           {/* Sidebar */}
           <aside className={`${styles.creatorSidebar} glass-card`}>
             <div className={styles.sidebarSection}>
-              <label className={styles.sidebarLabel}>Nazwa trasy</label>
+              <label className={styles.sidebarLabel}>{t("mapCreator.trackName")}</label>
               <input
                 className={styles.sidebarInput}
                 value={mapName}
@@ -38,7 +41,7 @@ export default function MapCreator(): JSX.Element {
             </div>
 
             <div className={styles.sidebarSection}>
-              <label className={styles.sidebarLabel}>Seed generatora</label>
+              <label className={styles.sidebarLabel}>{t("mapCreator.seed")}</label>
               <input
                 className={styles.sidebarInput}
                 value={seed}
@@ -48,26 +51,26 @@ export default function MapCreator(): JSX.Element {
             </div>
 
             <div className={styles.sidebarSection}>
-              <label className={styles.sidebarLabel}>Narzędzia</label>
+              <label className={styles.sidebarLabel}>{t("mapCreator.tools")}</label>
               <div className={styles.toolList}>
-                {TOOLS.map((t) => (
+                {TOOLS.map((tool) => (
                   <button
-                    key={t.id}
-                    className={`${styles.toolBtn} ${activeTool === t.id ? styles.toolActive : ""}`}
-                    onClick={() => setActiveTool(t.id)}
+                    key={tool.id}
+                    className={`${styles.toolBtn} ${activeTool === tool.id ? styles.toolActive : ""}`}
+                    onClick={() => setActiveTool(tool.id)}
                   >
-                    <span>{t.icon}</span> {t.label}
+                    <span>{tool.icon}</span> {tool.label}
                   </button>
                 ))}
               </div>
             </div>
 
             <div className={styles.sidebarSection}>
-              <label className={styles.sidebarLabel}>Parametry terenu</label>
+              <label className={styles.sidebarLabel}>{t("mapCreator.params")}</label>
               {[
-                { label: "Wysokość", def: 65 },
-                { label: "Szorstkość", def: 40 },
-                { label: "Krzywizna", def: 55 },
+                { label: t("mapCreator.height"), def: 65 },
+                { label: t("mapCreator.roughness"), def: 40 },
+                { label: t("mapCreator.curvature"), def: 55 },
               ].map((p) => (
                 <div key={p.label} className={styles.sliderRow}>
                   <span className={styles.sliderLabel}>{p.label}</span>
@@ -78,7 +81,7 @@ export default function MapCreator(): JSX.Element {
             </div>
 
             <button className="btn btn-primary" style={{ width: "100%", justifyContent: "center", marginTop: "8px" }}>
-              📤 Eksportuj .daa
+              📤 {t("mapCreator.exportBtn")}
             </button>
           </aside>
 
@@ -92,9 +95,9 @@ export default function MapCreator(): JSX.Element {
             <div className={styles.canvasOverlay}>
               <span className={styles.canvasIcon}>🗺️</span>
               <p className={styles.canvasHint}>
-                Kliknij na siatkę aby rysować trasę
+                {t("mapCreator.canvasHint")}
               </p>
-              <p className={styles.canvasHintSub}>Seed: {seed} · Trasa: {mapName}</p>
+              <p className={styles.canvasHintSub}>Seed: {seed} · {t("mapCreator.track")}: {mapName}</p>
             </div>
           </div>
         </div>

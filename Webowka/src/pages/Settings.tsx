@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import styles from "./PageShared.module.scss";
+import { useI18n } from "../context/I18nContext";
 
 export default function Settings(): JSX.Element {
   const [tab, setTab] = useState<"profile"|"general">("profile");
   const [notif, setNotif]   = useState(true);
   const [sounds, setSounds] = useState(true);
   const [metric, setMetric] = useState(true);
-  const [lang, setLang]     = useState("pl");
+  
+  const { lang, setLang, t } = useI18n();
 
   const stored = localStorage.getItem("daa_user");
   const user   = stored ? JSON.parse(stored) : null;
@@ -15,16 +17,16 @@ export default function Settings(): JSX.Element {
     <div className={styles.page}>
       <div className="container" style={{ maxWidth: 840 }}>
         <div className={`${styles.pageHeader} fade-up`}>
-          <span className="section-label">⚙️ Konfiguracja</span>
-          <h1 className="section-title">Ustawienia</h1>
+          <span className="section-label">⚙️ {t("settings.config")}</span>
+          <h1 className="section-title">{t("settings.title")}</h1>
         </div>
 
         {/* Tabs */}
         <div className={styles.authTabs} style={{ marginBottom: 32 }}>
           <button className={`${styles.authTab} ${tab === "profile" ? styles.authTabActive : ""}`}
-            onClick={() => setTab("profile")}>👤 Profil</button>
+            onClick={() => setTab("profile")}>👤 {t("settings.tabProfile")}</button>
           <button className={`${styles.authTab} ${tab === "general" ? styles.authTabActive : ""}`}
-            onClick={() => setTab("general")}>🌐 Ogólne</button>
+            onClick={() => setTab("general")}>🌐 {t("settings.tabGeneral")}</button>
         </div>
 
         {tab === "profile" && (
@@ -64,10 +66,10 @@ export default function Settings(): JSX.Element {
 
         {tab === "general" && (
           <div className={`${styles.settingsCard} glass-card fade-up`}>
-            <h3 className={styles.settingsGroup}>Powiadomienia i dźwięk</h3>
+            <h3 className={styles.settingsGroup}>{t("settings.notifAndSound")}</h3>
             {[
-              { label:"Powiadomienia push",    val:notif,  set:setNotif  },
-              { label:"Dźwięki interfejsu",    val:sounds, set:setSounds },
+              { label:t("settings.pushNotif"), val:notif,  set:setNotif  },
+              { label:t("settings.uiSounds"),  val:sounds, set:setSounds },
             ].map((item) => (
               <div key={item.label} className={styles.toggleRow}>
                 <span>{item.label}</span>
@@ -80,9 +82,9 @@ export default function Settings(): JSX.Element {
               </div>
             ))}
 
-            <h3 className={styles.settingsGroup} style={{ marginTop: 24 }}>Jednostki i język</h3>
+            <h3 className={styles.settingsGroup} style={{ marginTop: 24 }}>{t("settings.unitsAndLang")}</h3>
             <div className={styles.toggleRow}>
-              <span>Jednostki metryczne (km/h)</span>
+              <span>{t("settings.metricUnits")}</span>
               <button
                 className={`${styles.toggle} ${metric ? styles.toggleOn : ""}`}
                 onClick={() => setMetric((v) => !v)}
@@ -91,14 +93,13 @@ export default function Settings(): JSX.Element {
               </button>
             </div>
             <div className={styles.fieldGroup} style={{ marginTop: 16 }}>
-              <label className={styles.fieldLabel}>Język interfejsu</label>
+              <label className={styles.fieldLabel}>{t("settings.uiLang")}</label>
               <select className={styles.fieldInput} value={lang} onChange={(e) => setLang(e.target.value)}>
                 <option value="pl">🇵🇱 Polski</option>
                 <option value="en">🇬🇧 English</option>
-                <option value="de">🇩🇪 Deutsch</option>
               </select>
             </div>
-            <button className="btn btn-primary" style={{ marginTop: 8 }}>💾 Zapisz ustawienia</button>
+            <button className="btn btn-primary" style={{ marginTop: 8 }}>💾 {t("settings.saveSettings")}</button>
           </div>
         )}
       </div>
