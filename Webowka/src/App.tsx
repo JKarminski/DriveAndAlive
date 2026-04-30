@@ -15,6 +15,7 @@ import About from "./pages/About";
 import Docs from "./pages/Docs";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
+import Cookies from "./pages/Cookies";
 import ScrollToTop from "./components/ScrollToTop";
 
 export default function App(): JSX.Element {
@@ -78,6 +79,7 @@ export default function App(): JSX.Element {
           <Route path="/docs"         element={<Docs />} />
           <Route path="/privacy"      element={<Privacy />} />
           <Route path="/terms"        element={<Terms />} />
+          <Route path="/cookies"      element={<Cookies />} />
           <Route path="*"             element={<Navigate to="/" replace />} />
         </Routes>
       </div>

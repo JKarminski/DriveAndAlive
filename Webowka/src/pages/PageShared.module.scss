@@ -346,7 +346,7 @@
   font-family: 'Outfit', sans-serif;
   font-size: 1.6rem;
   font-weight: 800;
-  color: #fff;
+  color: var(--text);
   margin-bottom: 8px;
 }
 .authSub { color: var(--muted); font-size: 0.9rem; margin-bottom: 28px; }
@@ -401,7 +401,7 @@
   box-shadow: var(--glow-g);
   object-fit: cover;
 }
-.profileName { font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800; color: #fff; }
+.profileName { font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--text); }
 .profileSub  { font-size: 0.85rem; color: var(--muted); }
 
 .recordsSection { margin-bottom: 28px; }
@@ -450,7 +450,7 @@
   justify-content: space-between;
   margin-bottom: 28px;
 }
-.weatherCity { font-family: 'Outfit', sans-serif; font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 4px; }
+.weatherCity { font-family: 'Outfit', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--text); margin-bottom: 4px; }
 .weatherDesc { color: var(--muted); font-size: 0.95rem; text-transform: capitalize; }
 .weatherTemp {
   font-family: 'Outfit', sans-serif;
@@ -525,7 +525,7 @@
 .downloadBtn     { width: 100%; justify-content: center; }
 
 .downloadFeatures { margin-bottom: 40px; }
-.downloadFeatTitle { font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800; margin-bottom: 20px; color: #fff; }
+.downloadFeatTitle { font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800; margin-bottom: 20px; color: var(--text); }
 .downloadFeatGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -543,7 +543,7 @@
 
 .requirementsCard {
   padding: 28px 32px;
-  h3 { font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; color: #fff; }
+  h3 { font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; color: var(--text); }
 }
 .reqGrid {
   display: grid;
@@ -623,10 +623,10 @@
   margin-bottom: 52px;
 }
 .aboutMissionIcon  { font-size: 2.5rem; flex-shrink: 0; }
-.aboutMissionTitle { font-family: 'Outfit', sans-serif; font-size: 1.3rem; font-weight: 800; color: #fff; margin-bottom: 8px; }
+.aboutMissionTitle { font-family: 'Outfit', sans-serif; font-size: 1.3rem; font-weight: 800; color: var(--text); margin-bottom: 8px; }
 .aboutMissionText  { color: var(--muted); line-height: 1.75; }
 
-.aboutSectionTitle { font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 20px; }
+.aboutSectionTitle { font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: var(--text); margin-bottom: 20px; }
 
 .techSection { margin-bottom: 52px; }
 .techGrid {
