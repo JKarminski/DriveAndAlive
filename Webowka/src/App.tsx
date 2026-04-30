@@ -12,8 +12,8 @@ import Download from "./pages/Download";
 import Weather from "./pages/Weather";
 import Settings from "./pages/Settings";
 import About from "./pages/About";
+import Docs from "./pages/Docs";
 import Privacy from "./pages/Privacy";
-import Cookies from "./pages/Cookies";
 import Terms from "./pages/Terms";
 import ScrollToTop from "./components/ScrollToTop";
 
@@ -63,8 +63,8 @@ export default function App(): JSX.Element {
   return (
     <>
       <ScrollToTop />
-      <Navbar />
-      <div className="page-wrapper">
+      {location.pathname !== "/docs" && <Navbar />}
+      <div className="page-wrapper" style={{ paddingTop: location.pathname === "/docs" ? 0 : undefined }}>
         <Routes>
           <Route path="/"             element={<Home />} />
           <Route path="/leaderboard"  element={<Leaderboard />} />
@@ -75,13 +75,13 @@ export default function App(): JSX.Element {
           <Route path="/weather"      element={<Weather />} />
           <Route path="/settings"     element={<Settings />} />
           <Route path="/about"        element={<About />} />
+          <Route path="/docs"         element={<Docs />} />
           <Route path="/privacy"      element={<Privacy />} />
-          <Route path="/cookies"      element={<Cookies />} />
           <Route path="/terms"        element={<Terms />} />
           <Route path="*"             element={<Navigate to="/" replace />} />
         </Routes>
       </div>
-      {showFooter && <Footer />}
+      {showFooter && location.pathname !== "/docs" && <Footer />}
     </>
   );
 }

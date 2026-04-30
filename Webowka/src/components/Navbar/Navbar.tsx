@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { to: "/weather",      i18nKey: "nav.weather",      icon: "⛅" },
   { to: "/download",     i18nKey: "nav.download",     icon: "⬇️" },
   { to: "/about",        i18nKey: "nav.about",        icon: "ℹ️" },
+  { to: "/docs",         i18nKey: "nav.docs",         icon: "📚" },
 ];
 
 export default function Navbar(): JSX.Element {
@@ -77,6 +78,8 @@ export default function Navbar(): JSX.Element {
             <NavLink
               key={item.to}
               to={item.to}
+              target={item.to === "/docs" ? "_blank" : undefined}
+              rel={item.to === "/docs" ? "noopener noreferrer" : undefined}
               className={({ isActive }) =>
                 `${styles.link} ${isActive ? styles.active : ""}`
               }
@@ -128,6 +131,8 @@ export default function Navbar(): JSX.Element {
           <NavLink
             key={item.to}
             to={item.to}
+            target={item.to === "/docs" ? "_blank" : undefined}
+            rel={item.to === "/docs" ? "noopener noreferrer" : undefined}
             className={({ isActive }) =>
               `${styles.drawerLink} ${isActive ? styles.active : ""}`
             }
