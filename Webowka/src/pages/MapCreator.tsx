@@ -6,11 +6,11 @@ export default function MapCreator(): JSX.Element {
   const { t } = useI18n();
 
   const TOOLS = [
-    { id: "terrain", label: t("mapCreator.toolTerrain"),    icon: "🏔️" },
-    { id: "road",    label: t("mapCreator.toolRoad"),    icon: "🛣️" },
-    { id: "objects", label: t("mapCreator.toolObjects"),  icon: "🌲" },
-    { id: "weather", label: t("mapCreator.toolWeather"),   icon: "⛅" },
-    { id: "export",  label: t("mapCreator.toolExport"),  icon: "📤" },
+    { id: "terrain", label: t("mapCreator.toolTerrain"), icon: "🏔️" },
+    { id: "road", label: t("mapCreator.toolRoad"), icon: "🛣️" },
+    { id: "objects", label: t("mapCreator.toolObjects"), icon: "🌲" },
+    { id: "weather", label: t("mapCreator.toolWeather"), icon: "⛅" },
+    { id: "export", label: t("mapCreator.toolExport"), icon: "📤" },
   ];
 
   const [activeTool, setActiveTool] = useState("terrain");

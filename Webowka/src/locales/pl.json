@@ -67,7 +67,6 @@
     "historyEvent4": "Pozbycie się placeholderów, dokończenie prac nad interfejsem",
     "historyDate5": "30 kwietnia 2026",
     "historyEvent5": "Premiera DriveAndAlive!"
-
   },
   "achiev": {
     "label": "Twoje postępy",
@@ -126,14 +125,23 @@
     "title": "Tabela wyników",
     "subtitle": "Porównaj swoje rekordy z najlepszymi graczami na świecie. Wyniki aktualizowane w czasie rzeczywistym.",
     "trackAll": "Wszystkie trasy",
+    "trackAlpine": "Preria",
+    "trackGravel": "Góry",
+    "trackNight": "Arktyka",
+    "trackMountain": "Dżungla",
+    "trackDesert": "Sinusoida",
     "trackPrairie": "Preria",
     "trackMountains": "Góry",
-    "trackArctic": "Arktyk",
+    "trackArctic": "Arktyka",
     "trackJungle": "Dżungla",
     "colPlayer": "Gracz",
     "colCar": "Auto",
     "colTime": "Czas",
-    "colPts": "Punkty"
+    "colPts": "Punkty",
+    "loading": "Ładowanie wyników...",
+    "apiError": "Nie udało się pobrać danych z rankingu.",
+    "prev": "Poprzednia",
+    "next": "Następna"
   },
   "home": {
     "heroLabel": "Mobilna gra wyścigowa",
@@ -254,10 +262,8 @@
     "title": "Polityka Prywatności",
     "subtitle": "Dowiedz się, jak chronimy Twoje dane i szanujemy prywatność w świecie wirtualnych wyścigów.",
     "lastUpdate": "Ostatnia aktualizacja: 30 kwietnia 2026 r.",
-
     "h1": "Administrator Danych",
     "p1": "Administratorem Twoich danych osobowych jest DriveAndAlive Studio. Możesz skontaktować się z nami w sprawach prywatności pod adresem: privacy@driveandalive.com.",
-
     "h2": "Jakie dane gromadzimy?",
     "p2": "W trakcie korzystania z gry przetwarzamy wyłącznie dane niezbędne do jej działania:",
     "li2_1_strong": "Dane konta:",
@@ -266,7 +272,6 @@
     "li2_2": "czasy przejazdów, zdobyte osiągnięcia, wybrane trasy, dane rankingowe.",
     "li2_3_strong": "Dane techniczne:",
     "li2_3": "model urządzenia, wersja systemu operacyjnego, dane diagnostyczne (logi błędów).",
-
     "h3": "Cele i podstawy prawne przetwarzania danych",
     "p3": "Twoje dane przetwarzamy w następujących celach:",
     "li3_1": "Utworzenie i obsługa konta gracza – podstawa prawna: art. 6 ust. 1 lit. b RODO.",
@@ -275,19 +280,15 @@
     "li3_4": "Analiza statystyczna i balansowanie poziomu trudności tras – podstawa prawna: art. 6 ust. 1 lit. f RODO.",
     "li3_5": "Diagnostyka błędów i optymalizacja działania aplikacji – podstawa prawna: art. 6 ust. 1 lit. f RODO.",
     "p3_2": "Nie stosujemy profilowania ani zautomatyzowanego podejmowania decyzji wywołujących skutki prawne.",
-
     "h4": "Okres przechowywania danych",
     "li4_1": "Dane konta – do momentu usunięcia konta przez użytkownika.",
     "li4_2": "Statystyki gry – do 24 miesięcy od ostatniej aktywności.",
     "li4_3": "Dane techniczne (logi) – do 30 dni.",
     "li4_4": "Zapis chmurowy – do czasu usunięcia konta lub ręcznego usunięcia danych.",
-
     "h5": "Kto ma dostęp do Twoich danych?",
     "p5": "Korzystamy wyłącznie z usług zweryfikowanych dostawców chmurowych działających na terenie EOG. Twoje dane nie są sprzedawane żadnym podmiotom trzecim.",
-
     "h6": "Czy podanie danych jest obowiązkowe?",
     "p6": "Podanie danych konta (e-mail, hasło, nick) jest niezbędne do korzystania z gry. Dane techniczne i statystyki rozgrywki są zbierane automatycznie i są konieczne do prawidłowego działania aplikacji.",
-
     "h7": "Twoje prawa",
     "p7": "Masz prawo do:",
     "li7_1": "dostępu do swoich danych,",
@@ -298,7 +299,6 @@
     "li7_6": "wniesienia sprzeciwu wobec przetwarzania,",
     "li7_7": "otrzymania paczki z całą telemetrią dotyczącą Twojego konta.",
     "p7_2": "Masz również prawo wnieść skargę do Prezesa Urzędu Ochrony Danych Osobowych.",
-
     "h8": "Kontakt",
     "p8": "W sprawach prywatności możesz pisać na adres: privacy@driveandalive.com."
   },
@@ -307,37 +307,30 @@
     "title": "Polityka Cookies",
     "subtitle": "Pełna przejrzystość dotycząca zapisywania niewielkich plików danych na Twoim urządzeniu.",
     "lastUpdate": "Ostatnia aktualizacja: 28 kwietnia 2026 r.",
-
     "h1": "Czym są pliki cookies?",
     "p1": "Pliki cookies („ciasteczka”) to niewielkie pliki tekstowe zapisywane w urządzeniu końcowym Użytkownika podczas korzystania z Serwisu. Zawierają one m.in. nazwę witryny, czas przechowywania oraz unikalny identyfikator sesji, który umożliwia poprawne połączenie z Twoim kontem lub portfelem w grze. Cookies nie służą do identyfikacji użytkownika jako osoby – są wykorzystywane wyłącznie do obsługi funkcji Serwisu.",
-
     "h2": "Rodzaje wykorzystywanych plików cookies",
     "p2": "W Serwisie stosujemy dwa podstawowe typy plików cookies:",
     "li2_1_strong": "Niezbędne (techniczne):",
     "li2_1": "Umożliwiają działanie mechanizmu logowania, utrzymują aktywną sesję użytkownika (daa_user) oraz pozwalają na zapis ustawień profilu i poprawne wyświetlanie treści. Wyłączenie tych plików uniemożliwia korzystanie z Serwisu — sesja wygasałaby przy każdym odświeżeniu strony.",
     "li2_2_strong": "Analityczne:",
     "li2_2": "Służą do zbierania anonimowych informacji o ruchu na stronie, pozwalają sprawdzić, które podstrony są najczęściej odwiedzane (np. Map Creator po aktualizacji). Nie umożliwiają identyfikacji konkretnego użytkownika. Jeśli korzystamy z narzędzi analitycznych podmiotów trzecich, działają one wyłącznie w formie zanonimizowanej i nie przetwarzają danych osobowych.",
-
     "h3": "Cookies własne i zewnętrzne",
     "p3": "W Serwisie stosowane są głównie cookies własne, obsługujące logowanie i ustawienia gry. Cookies zewnętrzne mogą pojawić się wyłącznie w ramach narzędzi analitycznych — jeśli takie są używane, działają w sposób anonimowy.",
-
     "h4": "Czas przechowywania plików cookies",
     "li4_1": "cookies sesyjne – usuwane po zamknięciu przeglądarki.",
     "li4_2": "cookies trwałe – przechowywane maksymalnie przez okres niezbędny do działania funkcji Serwisu (np. 30 dni), chyba że użytkownik usunie je wcześniej ręcznie.",
-
     "h5": "Local Storage i dane testowe",
     "p5": "W związku z tym, że gra jest w fazie rozwoju, część ustawień (np. wybrany avatar) przechowywana jest w przeglądarkowym Local Storage.",
     "li5_1": "Local Storage nie jest plikiem cookie.",
     "li5_2": "Nie służy do śledzenia użytkownika ani profilowania.",
     "li5_3": "Usunięcie historii przeglądania może spowodować utratę zapisanych ustawień gry.",
-
     "h6": "Zarządzanie plikami cookies",
     "p6": "Przeglądarki internetowe domyślnie pozwalają na zapisywanie cookies. Użytkownik może samodzielnie:",
     "li6_1": "zablokować zapisywanie cookies,",
     "li6_2": "usunąć istniejące cookies,",
     "li6_3": "ustawić powiadomienia o ich zapisywaniu.",
     "p6_2": "Wyłączenie cookies technicznych spowoduje natychmiastowe zakończenie aktywnej sesji i może uniemożliwić korzystanie z Serwisu.",
-
     "h7": "Informacje o przetwarzaniu danych",
     "p7": "Szczegółowe informacje dotyczące przetwarzania danych osobowych, w tym praw użytkownika, znajdują się w Polityce Prywatności."
   },
@@ -346,24 +339,19 @@
     "title": "Regulamin",
     "subtitle": "Ogólne warunki świadczenia usług platformy webowej oraz gry DriveAndAlive.",
     "lastUpdate": "Obowiązuje od: 20 stycznia 2026 r.",
-
     "h1": "Postanowienia wstępne",
     "p1": "Niniejszy Regulamin wchodzi w życie od razu z wejściem w interakcję z usługami zrzeszonymi w projekcie i określa zasady korzystania z usług dostarczanych poprzez portal wymiany baz danych i tabel użytkowników, potocznie nazywanych: DriveAndAlive.",
-
     "h2": "Rejestracja i konto użytkownika",
     "li2_1": "Rejestracja w Serwisie jest dobrowolna oraz całkowicie darmowa.",
     "li2_2": "Gracz jest zobowiązany do posługiwania się nazwą użytkownika (pseudonimem), który nie jest wulgarna, obraźliwa ani nie narusza dóbr osobistych innych, pod karą wstrzymania postępów na profilu i trwałym usunięciu konta przez Administrację.",
     "li2_3": "Jeden Użytkownik powinien zarejestrować wyłącznie jedno główne Konto, powiązane z mobilną wersją zainstalowaną na lokalnym sprzęcie operacyjnym.",
-
     "h3": "Zasady zdrowej rywalizacji we wdrożeniach (Fair Play)",
     "p3_1": "DriveAndAlive w pełni celebruje mechanizmy esportowe oraz szlifowane tygodniami zdolności swoich graczy. Surowo wzbrania się więc:",
     "li3_1": "Korzystania z nieoficjalnych skryptów, programów w tle generujących dodatkowe, fikcyjne punkty na trasach rajdowych.",
     "li3_2": "Przetwarzania kodów binarnych gry tak, aby zmniejszać grawitację lub sztucznie zwiększać moc pojazdów i łamać ograniczniki tabeli rekordów.",
     "p3_2": "Kary w wypadku takich działań są permanentne i narzucają wykluczenie serwerowe dożywotnio (w modelu systemowym Hard-Ban).",
-
     "h4": "Tworzenie map przez moduł Map Creator",
     "p4": "Map Creator pozwala graczom kreować swoje drogi. Tworząc trasy rajdowe zgadzasz się przekazać nam bezpłatną, niewyłączną licencję do ich nieprzerywalnego serwowania i hostingu na wewnętrznych serwerach globalnych platformy dla ogółu zrzeszonej społeczności!",
-
     "h5": "Przerwy w dostępie technologicznym",
     "p5": "Twórcy zastrzegają sobie prawo do niezapowiadanych konserwacji platformy w celu wdrażania kolejnych, kluczowych poprawek sieciowych z bazami serwerów zrzeszonymi za tabele systematyzujące ranking gier. Robimy wszystko, aby te przestoje odbywały się tylko w porach nocnych."
   }
