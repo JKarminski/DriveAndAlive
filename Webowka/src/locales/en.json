@@ -232,7 +232,9 @@
   "toolRoad": "Road",
   "toolObjects": "Objects",
   "toolWeather": "Weather",
-  "toolExport": "Export"
+  "toolExport": "Export",
+  "comingSoonTitle": "Coming soon",
+  "comingSoonDesc": "The Map Creator module is currently under development. Soon you will be able to design your own tracks and share them with the community!"
 },
 
   "weather": {

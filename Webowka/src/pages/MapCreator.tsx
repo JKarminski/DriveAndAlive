@@ -29,6 +29,11 @@ export default function MapCreator(): JSX.Element {
         </div>
 
         <div className={styles.creatorLayout}>
+          <div className={styles.creatorComingSoon}>
+            <h2>{t("mapCreator.comingSoonTitle")}</h2>
+            <p>{t("mapCreator.comingSoonDesc")}</p>
+          </div>
+
           {/* Sidebar */}
           <aside className={`${styles.creatorSidebar} glass-card`}>
             <div className={styles.sidebarSection}>
